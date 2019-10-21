@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+
+    <script src="../js/vue.min.js"></script>
+    <!-- 引入样式 -->
+    <!-- <link rel="stylesheet" href="../css/element.css"> -->
+    <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+    <!-- 引入组件库 -->
+    <script src="../js/element.min.js"></script>
+</head>
+<style>
+    .d_container{
+        padding: 30px;
+    }
+    .weekly_cont{
+       padding: 30px 10px;
+    }
+    .weekly_cont h2{
+        text-align: center;
+    }
+    .weekly_cont h3{
+        margin: 30px 0 15px;
+    }
+    .weekly_cont h4{
+        margin: 15px 0;
+    }
+    .mt20{
+        margin-top: 20px;
+    }
+    .d_container .ml20{
+        margin-left: 20px;
+    }
+    .fr{
+        float: right;
+    }
+</style>
+<body>
+    <div id="refApp">
+        <div class="d_container">
+            <el-row>
+                <el-col :sm="16" :offset="4">
+                    <div>
+                        选择周：
+                        <el-date-picker
+                            ref="week"
+                            v-model="data.week"
+                            type="week"
+                            format="yyyy年MM月第WW周"
+                            placeholder="选择周"
+                            @change="changeWeek">
+                        </el-date-picker>
+                        <el-button class="ml20" type="primary" @click="onSearch">搜索</el-button>
+                        <div class="fr">
+                            <el-button class="" @click="download">文件导出</el-button>
+                            <el-button class="ml20" @click="goSendEmail">邮件发送</el-button>
+                        </div>
+                    </div>
+                    <div class="weekly_cont">
+                        <h2>{{weekDisplayValue}}法规速递</h2>
+                        <div class="news_item" v-for="(news,k) in data.news" :key="k">
+                            <h3>->{{news.contrLevels}}</h3>
+                            <h4>{{k+1}}.{{news.code}} <span class="fr">{{news.time}}</span></h4>
+                            <el-input v-model="news.theme" placeholder="请输入政策主题"></el-input>
+                        </div>
+                    </div>
+                </el-col>
+            </el-row>
+            
+        </div>
+        
+    </div>
+</body>
+</html>
+
+<script>
+new Vue({
+    el: '#refApp',
+    
+    data: {
+        data: {
+            week: new Date(),
+            news: []
+        },
+        weekDisplayValue: '',
+        steps: [
+            {
+                label: '爬虫数据修改',
+                icon: 'el-icon-edit',
+                status: 'process'
+            }, {
+                label: '设置落实机构',
+                icon: 'el-icon-office-building',
+                status: 'process'
+            }, {
+                label: '设置控制领域',
+                icon: 'el-icon-coin',
+                status: 'finish'
+            }
+        ],
+        performUnitList: [
+            {
+                value: '0',
+                label: '中国太平洋保险（集团）股份有限公司'
+            }, {
+                value: '1',
+                label: '太平洋资产管理有限责任公司'
+            }, {
+                value: '2',
+                label: '中国太平洋人寿保险股份有限公司'
+            }, {
+                value: '3',
+                label: '安信农业保险股份有限公司'
+            }, {
+                value: '4',
+                label: '中国太平洋财产保险股份有限公司'
+            }, {
+                value: '5',
+                label: '长江养老保险股份有限公司'
+            }, {
+                value: '6',
+                label: '太保安联健康保险股份有限公司'
+            }, {
+                value: '7',
+                label: '太平洋保险养老产业投资管理有限责任公司'
+            }
+        ]
+    },
+    mounted() {
+        this.query();
+    },
+    methods: {
+        query() {
+            this.data = {
+                week: new Date(),
+                news: [
+                    {
+                        contrLevels: '控制领域一级---控制领域二级---控制领域三级',
+                        code: '银保监发〔2019〕23号',
+                        time: '2019年5月8日',
+                        theme: '',
+                        originLink: 'http://www.cbrc.gov.cn/chinese/newShouDoc/BB8E3EEC78EA4281ADF4A55325AFE271.html'
+                    }, {
+                        contrLevels: '控制领域一级---控制领域二级---控制领域三级',
+                        code: '银保监发〔2019〕24号',
+                        time: '2019年5月8日',
+                        theme: '',
+                        originLink: 'http://www.cbrc.gov.cn/chinese/newShouDoc/BB8E3EEC78EA4281ADF4A55325AFE271.html'
+                    }, {
+                        contrLevels: '控制领域一级---控制领域二级---控制领域三级',
+                        code: '银保监发〔2019〕25号',
+                        time: '2019年5月8日',
+                        theme: '',
+                        originLink: 'http://www.cbrc.gov.cn/chinese/newShouDoc/BB8E3EEC78EA4281ADF4A55325AFE271.html'
+                    }, {
+                        contrLevels: '控制领域一级---控制领域二级---控制领域三级',
+                        code: '银保监发〔2019〕26号',
+                        time: '2019年5月8日',
+                        theme: '',
+                        originLink: 'http://www.cbrc.gov.cn/chinese/newShouDoc/BB8E3EEC78EA4281ADF4A55325AFE271.html'
+                    }
+                ]
+            }
+            this.weekDisplayValue = this.$refs.week.displayValue;
+        },
+        onSearch() {
+
+        },
+        download() {
+            const param = this.data.news;
+            console.log('download')
+        },
+        goSendEmail() {
+            window.location.href = './sendEmail.html'
+        },
+        changeWeek(va) {
+            this.weekDisplayValue = this.$refs.week.displayValue;
+        }
+    }
+})
+</script>

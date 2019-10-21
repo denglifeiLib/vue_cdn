@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+
+    <script src="../js/vue.min.js"></script>
+    <!-- 引入样式 -->
+    <!-- <link rel="stylesheet" href="../css/element.css"> -->
+    <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+    <!-- 引入组件库 -->
+    <script src="../js/element.min.js"></script>
+</head>
+<style>
+    .d_container{
+        padding: 30px;
+    }
+    .d_mid_content{
+       margin-top: 30px;
+    }
+    .d_btm_btn{
+        margin-top: 80px;
+        text-align: center;
+    }
+    .d_btm_btn .el-button{
+        padding: 12px 45px;
+    }
+    .mt20{
+        margin-top: 20px;
+    }
+</style>
+<body>
+    <div id="refApp">
+        <div class="d_container">
+            <el-steps simple>
+                <el-step v-for="(step,k) in steps" :key="k" :title="step.label" :icon="step.icon" :status="step.status"></el-step>
+            </el-steps>
+
+            <el-row class="d_mid_content">
+                <el-col :span="16" :offset="4">
+                    <div>
+                        <el-row :gutter="20">
+                            <el-col :span="3">原文链接</el-col>
+                            <el-col :span="21">{{form.originLink}}</el-col>
+                        </el-row>
+                        <el-row :gutter="20" class="mt20">
+                            <el-col :span="3">PDF附件</el-col>
+                            <el-col :span="21">{{form.attachment}}</el-col>
+                        </el-row>
+                        <el-checkbox-group v-model="form.performUnit" @change="change">
+                            <el-row :gutter="20" class="mt20">
+                                <el-col :sm="24" :md="12" v-for="(unit,k) in performUnitList" :key="k"  class="mt20">
+                                    <el-checkbox :label="unit.value" border>{{unit.label}}</el-checkbox>
+                                </el-col>
+                            </el-row>
+                        </el-checkbox-group>
+                        <div class="d_btm_btn">
+                            <el-button @click="prev">上一步</el-button>
+                            <el-button type="primary" @click="save">数据暂存</el-button>
+                            <el-button @click="next">下一步</el-button>
+                        </div>
+                    </div>
+                </el-col>
+            </el-row>
+        </div>
+        
+    </div>
+</body>
+</html>
+
+<script>
+new Vue({
+    el: '#refApp',
+    
+    data: {
+        form: {
+            originLink: '',
+            attachment: '',
+            performUnit: []
+        },
+        steps: [
+            {
+                label: '爬虫数据修改',
+                icon: 'el-icon-edit',
+                status: 'process'
+            }, {
+                label: '设置落实机构',
+                icon: 'el-icon-office-building',
+                status: 'finish'
+            }, {
+                label: '设置控制领域',
+                icon: 'el-icon-coin',
+                status: 'wait'
+            }
+        ],
+        performUnitList: [
+            {
+                value: '0',
+                label: '中国太平洋保险（集团）股份有限公司'
+            }, {
+                value: '1',
+                label: '太平洋资产管理有限责任公司'
+            }, {
+                value: '2',
+                label: '中国太平洋人寿保险股份有限公司'
+            }, {
+                value: '3',
+                label: '安信农业保险股份有限公司'
+            }, {
+                value: '4',
+                label: '中国太平洋财产保险股份有限公司'
+            }, {
+                value: '5',
+                label: '长江养老保险股份有限公司'
+            }, {
+                value: '6',
+                label: '太保安联健康保险股份有限公司'
+            }, {
+                value: '7',
+                label: '太平洋保险养老产业投资管理有限责任公司'
+            }
+        ]
+    },
+    mounted() {
+        this.query();
+    },
+    methods: {
+        query() {
+            this.form = {
+                originLink: 'http://www.cbrc.gov.cn/chinese/newShouDoc/BB8E3EEC78EA4281ADF4A55325AFE271.html',
+                attachment: 'BB8E3EEC78EA4281ADF4A55325AFE271.pdf',
+                performUnit: ['0', '1', '2', '3', '4', '5', '6', '7']
+            }
+        },
+        change(va) {
+            console.log(9999, va)
+        },
+        save() {
+            console.log(this.form)
+        },
+        prev(row) {
+            window.location.href = './rule_audit_1.html';
+        },
+        next(row) {
+            window.location.href = './rule_audit_3.html';
+        }
+    }
+})
+</script>

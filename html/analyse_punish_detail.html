@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+
+    <script src="../js/vue.min.js"></script>
+    <!-- 引入样式 -->
+    <!-- <link rel="stylesheet" href="../css/element.css"> -->
+    <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+    <!-- 引入组件库 -->
+    <script src="../js/element.min.js"></script>
+</head>
+<style>
+    .d_container{
+        padding: 30px;
+    }
+    .mt20{
+        margin-top: 20px;
+    }
+    .d_container .ml20{
+        margin-left: 20px;
+    }
+    .d_tabel_tt{
+        margin: 40px 0 25px;
+        text-align: center;
+    }
+    .d_pagination{
+        margin-top: 30px;
+        text-align: center;
+    }
+</style>
+<body>
+    <div id="refApp">
+        <div class="d_container">
+            <div>
+                月份：
+                <el-date-picker
+                    ref="month"
+                    v-model="month"
+                    type="month"
+                    format="yyyy年MM月"
+                    placeholder="选择月">
+                </el-date-picker>
+                <span class="ml20">机构：</span>
+                <el-select
+                    v-model="units"
+                    multiple
+                    filterable
+                    remote
+                    reserve-keyword
+                    placeholder="请输入关键词"
+                    :remote-method="findUnit"
+                    :loading="findUnitloading">
+                    <el-option
+                    v-for="item in options"
+                    :key="item.value"
+                    :label="item.label"
+                    :value="item.value">
+                    </el-option>
+                </el-select>
+                <el-button class="ml20" type="primary" @click="onSearch">搜索</el-button>
+                <el-button class="ml20" type="primary" @click="download">文件导出</el-button>
+            </div>
+
+            <h3 class="d_tabel_tt">{{monthDisplayValue}}同业监管处罚统计分析报表</h3>
+
+            <el-table :data="tableData" border style="width: 100%;" :header-cell-style="styleH" v-loading="loading">
+                    <el-table-column label="处罚文号" width="100px">
+                        <el-table-column prop="code" label="处罚文号" width="100px"></el-table-column>
+                    </el-table-column>
+                    <el-table-column label="受处罚主体">
+                        <el-table-column prop="name" label="机构名称" width="150px"></el-table-column>
+                        <el-table-column prop="perrson_name" label="当事人姓名" width="100px"></el-table-column>
+                        <el-table-column prop="unit_name" label="中介机构名称" width="140px"></el-table-column>
+                    </el-table-column>
+                    <el-table-column label="违规行为标签">
+                        <el-table-column prop="name" label="一级标签" width="200px"></el-table-column>
+                        <el-table-column prop="perrson_name" label="二级标签" width="200px"></el-table-column>
+                        <el-table-column prop="agency_name" label="三级标签和处罚金额" width="200px"></el-table-column>
+                    </el-table-column>
+                    <el-table-column label="罚单金额（万元）">
+                        <el-table-column prop="punish_money_unit" label="机构罚款金额" width="80px"></el-table-column>
+                        <el-table-column prop="punish_money_person" label="个人罚款金额" width="80px"></el-table-column>
+                        <el-table-column prop="punish_money_agency" label="中介机构罚款金额" width="80px"></el-table-column>
+                    </el-table-column>
+                    <el-table-column label="其他处罚（是/否）">
+                        <el-table-column prop="unit_punish" label="机构警告次数" width="80px">
+                            <template slot-scope="scope">{{ifVal[scope.row.unit_punish]}}</template>
+                        </el-table-column>
+                        <el-table-column prop="person_punish" label="个人警告次数" width="80px">
+                            <template slot-scope="scope">{{ifVal[scope.row.person_punish]}}</template>
+                        </el-table-column>
+                        <el-table-column prop="stop_server" label="停止新业务次数" width="80px">
+                            <template slot-scope="scope">{{ifVal[scope.row.stop_server]}}</template>
+                        </el-table-column>
+                        <el-table-column prop="stop_server_dis" label="停止新业务备注" width="80px"></el-table-column>
+                        <el-table-column prop="stop_post_qualification" label="撤销任职资格次数">
+                            <template slot-scope="scope">{{ifVal[scope.row.stop_server]}}</template>
+                        </el-table-column>
+                    </el-table-column>
+                    <el-table-column label="处罚详情">
+                        <el-table-column prop="punish_reason" label="处罚事由" width="260px">
+                            <template slot-scope="scope"><div v-html="scope.row.punish_reason"></div></template>
+                        </el-table-column>
+                        <el-table-column prop="punish_content" label="处罚内容" width="260px"></el-table-column>
+                        <el-table-column prop="punish_date" label="处罚日期" width="120px"></el-table-column>
+                        <el-table-column prop="punish_area" label="地区" width="80px"></el-table-column>
+                    </el-table-column>
+                    <el-table-column label="信息来源">
+                        <el-table-column prop="originLink" label="处罚信息网址" width="200px"></el-table-column>
+                    </el-table-column>
+            </el-table>
+
+            <el-pagination
+                class="d_pagination"
+                @size-change="changePageSize"
+                @current-change="query"
+                :current-page="pagenation.page"
+                :page-sizes="[10, 20, 50, 100]"
+                :page-size="10"
+                layout="total, sizes, prev, pager, next, jumper"
+                :total="80">
+            </el-pagination>
+        </div>
+        
+    </div>
+</body>
+</html>
+
+<script>
+new Vue({
+    el: '#refApp',
+    
+    data: {
+        month: new Date(),
+        monthDisplayValue: '',
+        tableData: [],
+        units: [],
+        loading: false,
+        findUnitloading: false,
+        options: [],
+        list: [],
+        states: ["Alabama", "Alaska", "Arizona",
+        "Arkansas", "California", "Colorado",
+        "Connecticut", "Delaware", "Florida",
+        "Georgia", "Hawaii", "Idaho", "Illinois",
+        "Indiana", "Iowa", "Kansas", "Kentucky",
+        "Louisiana", "Maine", "Maryland",
+        "Massachusetts", "Michigan", "Minnesota",
+        "Mississippi", "Missouri", "Montana",
+        "Nebraska", "Nevada", "New Hampshire",
+        "New Jersey", "New Mexico", "New York",
+        "North Carolina", "North Dakota", "Ohio",
+        "Oklahoma", "Oregon", "Pennsylvania",
+        "Rhode Island", "South Carolina",
+        "South Dakota", "Tennessee", "Texas",
+        "Utah", "Vermont", "Virginia",
+        "Washington", "West Virginia", "Wisconsin",
+        "Wyoming"],
+        pagenation: {
+            page: 1
+        },
+        ifVal: {
+            '0': '否',
+            '1': '是'
+        }
+    },
+    mounted() {
+        this.query();
+        this.list = this.states.map(item => {
+            return { value: item, label: item };
+        });
+    },
+    methods: {
+        query() {
+            this.loading = true;
+            this.monthDisplayValue = this.$refs.month.displayValue;
+
+            setTimeout(()=>{
+                this.loading = false;
+                this.tableData = [
+                    {
+                        name: "中国银保监会关于开展“巩固治乱象成果 促进合规建设”工作的通知",
+                        code: "银保监发〔2019〕23号",
+                        perrson_name: "杨帆",
+                        unit_name: '中介机构名称',
+                        contrLevel1: '公司治理，运营管理',
+                        contrLevel2: '关联交易，承保管理',
+                        contrLevel3: '关联方管理，保单缮制',
+                        break_label_1: '保险业务-运营控制；保险业务-销售控制',
+                        break_label_2: '产品：40万元；销售过程和品质：25万元',
+                        break_label_3: '产品：40万元；销售过程和品质：25万元',
+                        punish_money_unit: '2',
+                        punish_money_person: '2',
+                        punish_money_agency: '8',
+                        unit_punish: '0',
+                        person_punish: '1',
+                        stop_server: '1',
+                        stop_server_dis: '停止新业务备注',
+                        stop_post_qualification: '0',
+                        punish_reason: '一，处罚事由处罚事由处罚事由处罚事由处罚事由<br/>二，处罚事由处罚事由处罚事由处罚事由处罚处罚事由处罚事由处罚处罚事由处罚事由处罚处罚事由处罚事由处罚事由<br/>三，处罚事由处处罚事由处罚事由处罚处罚事由处罚事由<br/>',
+                        punish_content: '一，处罚事由处罚事由处罚事由处罚事由处罚事由<br/>二，处罚事由处罚事由处罚事由处罚事由处罚处罚事由处罚事由处罚处罚事由处罚事由处罚处罚事由处罚事由处罚事由<br/>三，处罚事由处处罚事由处罚事由处罚处罚事由处罚事由<br/>',
+                        punish_date: '2019-08-15',
+                        punish_area: '上海',
+                        originLink: 'http://www.cbrc.gov.cn/chinese/newShouDoc/BB8E3EEC78EA4281ADF4A55325AFE271.html'
+                    }, {
+                        name: "中国银保监会关于开展“巩固治乱象成果 促进合规建设”工作的通知",
+                        code: "银保监发〔2019〕23号",
+                        perrson_name: "杨帆",
+                        unit_name: '中介机构名称',
+                        contrLevel1: '公司治理，运营管理',
+                        contrLevel2: '关联交易，承保管理',
+                        contrLevel3: '关联方管理，保单缮制',
+                        break_label_1: '保险业务-运营控制；保险业务-销售控制',
+                        break_label_2: '产品：40万元；销售过程和品质：25万元',
+                        break_label_3: '产品：40万元；销售过程和品质：25万元',
+                        punish_money_unit: '2',
+                        punish_money_person: '2',
+                        punish_money_agency: '8',
+                        unit_punish: '0',
+                        person_punish: '1',
+                        stop_server: '1',
+                        stop_server_dis: '停止新业务备注',
+                        stop_post_qualification: '0',
+                        punish_reason: '一，处罚事由处罚事由处罚事由处罚事由处罚事由<br/>二，处罚事由处罚事由处罚事由处罚事由处罚处罚事由处罚事由处罚处罚事由处罚事由处罚处罚事由处罚事由处罚事由<br/>三，处罚事由处处罚事由处罚事由处罚处罚事由处罚事由<br/>',
+                        punish_content: '一，处罚事由处罚事由处罚事由处罚事由处罚事由<br/>二，处罚事由处罚事由处罚事由处罚事由处罚处罚事由处罚事由处罚处罚事由处罚事由处罚处罚事由处罚事由处罚事由<br/>三，处罚事由处处罚事由处罚事由处罚处罚事由处罚事由<br/>',
+                        punish_date: '2019-08-15',
+                        punish_area: '上海',
+                        originLink: 'http://www.cbrc.gov.cn/chinese/newShouDoc/BB8E3EEC78EA4281ADF4A55325AFE271.html'
+                    }, {
+                        name: "中国银保监会关于开展“巩固治乱象成果 促进合规建设”工作的通知",
+                        code: "银保监发〔2019〕23号",
+                        perrson_name: "杨帆",
+                        unit_name: '中介机构名称',
+                        contrLevel1: '公司治理，运营管理',
+                        contrLevel2: '关联交易，承保管理',
+                        contrLevel3: '关联方管理，保单缮制',
+                        break_label_1: '保险业务-运营控制；保险业务-销售控制',
+                        break_label_2: '产品：40万元；销售过程和品质：25万元',
+                        break_label_3: '产品：40万元；销售过程和品质：25万元',
+                        punish_money_unit: '2',
+                        punish_money_person: '2',
+                        punish_money_agency: '8',
+                        unit_punish: '0',
+                        person_punish: '1',
+                        stop_server: '1',
+                        stop_server_dis: '停止新业务备注',
+                        stop_post_qualification: '0',
+                        punish_reason: '一，处罚事由处罚事由处罚事由处罚事由处罚事由<br/>二，处罚事由处罚事由处罚事由处罚事由处罚处罚事由处罚事由处罚处罚事由处罚事由处罚处罚事由处罚事由处罚事由<br/>三，处罚事由处处罚事由处罚事由处罚处罚事由处罚事由<br/>',
+                        punish_content: '一，处罚事由处罚事由处罚事由处罚事由处罚事由<br/>二，处罚事由处罚事由处罚事由处罚事由处罚处罚事由处罚事由处罚处罚事由处罚事由处罚处罚事由处罚事由处罚事由<br/>三，处罚事由处处罚事由处罚事由处罚处罚事由处罚事由<br/>',
+                        punish_date: '2019-08-15',
+                        punish_area: '上海',
+                        originLink: 'http://www.cbrc.gov.cn/chinese/newShouDoc/BB8E3EEC78EA4281ADF4A55325AFE271.html'
+                    }, {
+                        name: "中国银保监会关于开展“巩固治乱象成果 促进合规建设”工作的通知",
+                        code: "银保监发〔2019〕23号",
+                        perrson_name: "杨帆",
+                        unit_name: '中介机构名称',
+                        contrLevel1: '公司治理，运营管理',
+                        contrLevel2: '关联交易，承保管理',
+                        contrLevel3: '关联方管理，保单缮制',
+                        break_label_1: '保险业务-运营控制；保险业务-销售控制',
+                        break_label_2: '产品：40万元；销售过程和品质：25万元',
+                        break_label_3: '产品：40万元；销售过程和品质：25万元',
+                        punish_money_unit: '2',
+                        punish_money_person: '2',
+                        punish_money_agency: '8',
+                        unit_punish: '0',
+                        person_punish: '1',
+                        stop_server: '1',
+                        stop_server_dis: '停止新业务备注',
+                        stop_post_qualification: '0',
+                        punish_reason: '一，处罚事由处罚事由处罚事由处罚事由处罚事由<br/>二，处罚事由处罚事由处罚事由处罚事由处罚处罚事由处罚事由处罚处罚事由处罚事由处罚处罚事由处罚事由处罚事由<br/>三，处罚事由处处罚事由处罚事由处罚处罚事由处罚事由<br/>',
+                        punish_content: '一，处罚事由处罚事由处罚事由处罚事由处罚事由<br/>二，处罚事由处罚事由处罚事由处罚事由处罚处罚事由处罚事由处罚处罚事由处罚事由处罚处罚事由处罚事由处罚事由<br/>三，处罚事由处处罚事由处罚事由处罚处罚事由处罚事由<br/>',
+                        punish_date: '2019-08-15',
+                        punish_area: '上海',
+                        originLink: 'http://www.cbrc.gov.cn/chinese/newShouDoc/BB8E3EEC78EA4281ADF4A55325AFE271.html'
+                    }, {
+                        name: "中国银保监会关于开展“巩固治乱象成果 促进合规建设”工作的通知",
+                        code: "银保监发〔2019〕23号",
+                        perrson_name: "杨帆",
+                        unit_name: '中介机构名称',
+                        contrLevel1: '公司治理，运营管理',
+                        contrLevel2: '关联交易，承保管理',
+                        contrLevel3: '关联方管理，保单缮制',
+                        break_label_1: '保险业务-运营控制；保险业务-销售控制',
+                        break_label_2: '产品：40万元；销售过程和品质：25万元',
+                        break_label_3: '产品：40万元；销售过程和品质：25万元',
+                        punish_money_unit: '2',
+                        punish_money_person: '2',
+                        punish_money_agency: '8',
+                        unit_punish: '0',
+                        person_punish: '1',
+                        stop_server: '1',
+                        stop_server_dis: '停止新业务备注',
+                        stop_post_qualification: '0',
+                        punish_reason: '一，处罚事由处罚事由处罚事由处罚事由处罚事由<br/>二，处罚事由处罚事由处罚事由处罚事由处罚处罚事由处罚事由处罚处罚事由处罚事由处罚处罚事由处罚事由处罚事由<br/>三，处罚事由处处罚事由处罚事由处罚处罚事由处罚事由<br/>',
+                        punish_content: '一，处罚事由处罚事由处罚事由处罚事由处罚事由<br/>二，处罚事由处罚事由处罚事由处罚事由处罚处罚事由处罚事由处罚处罚事由处罚事由处罚处罚事由处罚事由处罚事由<br/>三，处罚事由处处罚事由处罚事由处罚处罚事由处罚事由<br/>',
+                        punish_date: '2019-08-15',
+                        punish_area: '上海',
+                        originLink: 'http://www.cbrc.gov.cn/chinese/newShouDoc/BB8E3EEC78EA4281ADF4A55325AFE271.html'
+                    }
+                ];
+            }, 500)
+            
+        },
+        onSearch() {
+            console.log(this.month, this.units)
+            this.query();
+        },
+        download() {
+
+        },
+        styleH() {
+            return {background: '#fbfbfb', textAlign: 'center', color: '#333'}
+        },
+        findUnit(query) {
+            if (query !== '') {
+                this.findUnitloading = true;
+                setTimeout(() => {
+                    this.findUnitloading = false;
+                    this.options = this.list.filter(item => {
+                    return item.label.toLowerCase()
+                        .indexOf(query.toLowerCase()) > -1;
+                    });
+                }, 200);
+            } else {
+                this.options = [];
+            }
+        },
+        changePageSize(size) {
+            console.log(888888, size)
+        }
+    }
+})
+</script>

@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+
+    <script src="../js/vue.min.js"></script>
+    <!-- 引入样式 -->
+    <!-- <link rel="stylesheet" href="../css/element.css"> -->
+    <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+    <!-- 引入组件库 -->
+    <script src="../js/element.min.js"></script>
+</head>
+<style>
+    .d_container{
+        padding: 30px;
+    }
+    .d_search{
+        min-height: 100px;
+    }
+    .d_pagination{
+        margin-top: 30px;
+        text-align: center;
+    }
+</style>
+<body>
+    <div id="refApp">
+        <div class="d_container">
+            <!-- onSearch -->
+             <el-form :inline="true" :model="form" class="d_search">
+                <el-form-item label="数据状态">
+                    <el-select v-model="form.status" multiple placeholder="请选择">
+                        <el-option
+                            v-for="item in statusList"
+                            :key="item.value"
+                            :label="item.label"
+                            :value="item.value">
+                        </el-option>
+                    </el-select>
+                </el-form-item>
+                <el-form-item label="发文机构分类">
+                    <el-select v-model="form.institution" multiple placeholder="请选择">
+                        <el-option
+                            v-for="item in institutionList"
+                            :key="item.value"
+                            :label="item.label"
+                            :value="item.value">
+                        </el-option>
+                    </el-select>
+                </el-form-item>
+                <el-form-item label="发文日期">
+                    <el-date-picker
+                        v-model="form.dateRange"
+                        type="daterange"
+                        range-separator="至"
+                        start-placeholder="开始日期"
+                        end-placeholder="结束日期">
+                    </el-date-picker>
+                </el-form-item>
+                <el-form-item>
+                    <el-button type="primary" @click="onSearch">搜索</el-button>
+                </el-form-item>
+            </el-form>
+    
+            <!-- tabel -->
+            <el-table :data="tableData" border style="width: 100%;" v-loading="loading" :header-cell-style="styleH">
+                <el-table-column prop="name" label="发文名称" width="150" fixed></el-table-column>
+                <el-table-column prop="code" label="发文文号" width="150"></el-table-column>
+                <el-table-column prop="institution" label="发文机构" width="150"></el-table-column>
+                <el-table-column prop="publishDate" label="发文日期" width="150"></el-table-column>
+                <el-table-column prop="performDate" label="实施日期" width="150"></el-table-column>
+                <el-table-column prop="grade" label="效力级别" width="150"></el-table-column>
+                <el-table-column prop="mainUnit" label="主送单位" width="150"></el-table-column>
+                <el-table-column prop="performUnit" label="落实机构" width="150"></el-table-column>
+                <el-table-column prop="unitStatus" label="制度状态" width="150"></el-table-column>
+                <el-table-column prop="originLink" label="原文链接" width="150"></el-table-column>
+                <el-table-column prop="contrLevel1" label="控制领域一级" width="150"></el-table-column>
+                <el-table-column prop="contrLevel2" label="控制领域二级" width="150"></el-table-column>
+                <el-table-column prop="contrLevel3" label="控制领域三级" width="150"></el-table-column>
+                <el-table-column prop="status" label="数据状态" width="150">
+                    <template slot-scope="scope">
+                        {{scope.row.status === '0' ? '待确认' : '已确认'}}
+                    </template>
+                </el-table-column>
+                <el-table-column  label="PDF附件" width="150">
+                    <template slot-scope="scope">
+                        <el-button size="small" @click="view(scope.row)" type="primary">查看</el-button>
+                    </template>
+                </el-table-column>
+                <el-table-column prop="date" label="操作" width="150" fixed="right">
+                    <template slot-scope="scope">
+                        <div style="text-align: center;" v-if="scope.row.status === '0'">
+                            <el-button size="small" @click="goAudit(scope.row)" type="primary">数据审核</el-button> <br> <br>
+                            <el-button size="small" @click="deleteDate(scope.row)">数据删除</el-button>
+                        </div>
+                    </template>
+                </el-table-column>
+            </el-table>
+    
+    
+            <el-pagination
+                class="d_pagination"
+                @size-change="changePageSize"
+                @current-change="query"
+                :current-page="pagenation.page"
+                :page-sizes="[10, 20, 50, 100]"
+                :page-size="10"
+                layout="total, sizes, prev, pager, next, jumper"
+                :total="80">
+            </el-pagination>
+        </div>
+        
+    </div>
+</body>
+</html>
+
+<script>
+new Vue({
+    el: '#refApp',
+    
+    data: {
+        form: {
+            status: [],
+            institution: [],
+            dateRange: ''
+        },
+        tableData: [],
+        pagenation: {
+            page: 1
+        },
+        loading: false,
+        statusList: [
+            {
+                value: '0',
+                label: '待确认'
+            }, {
+                value: '1',
+                label: '已确认'
+            }
+        ],
+        institutionList: [
+            {
+                value: '0',
+                label: '中国银行保险监督管理委员会'
+            }, {
+                value: '1',
+                label: '中国证券监督管理委员会'
+            }, {
+                value: '2',
+                label: '中国人民银行'
+            }, {
+                value: '3',
+                label: '上海国有资产监督管理委员会'
+            }
+        ],
+    },
+    mounted() {
+        this.query()
+    },
+    methods: {
+        query(page) {
+            console.log(9999, page);
+            this.loading = true;
+            setTimeout(()=>{
+                this.loading = false;
+                this.tableData = [
+                    {
+                        name: "中国银保监会关于开展“巩固治乱象成果 促进合规建设”工作的通知",
+                        code: "银保监发〔2019〕23号",
+                        institution: "中国银保监会",
+                        publishDate: '2019年5月8日',
+                        performDate: '2019年5月23日',
+                        grade: '规范性文件',
+                        mainUnit: '各银保监局，各政策性银行、大型银行、股份制银行，邮储银行，外资银行，各金融资产管理公司，各保险集团（控股）公司、保险公司、保险资产管理公司',
+                        performUnit: '各银保监局，各政策性银行、大型银行、股份制银行，邮储银行，外资银行，各金融资产管理公司，各保险集团（控股）公司、保险公司、保险资产管理公司',
+                        unitStatus: '现行有效',
+                        originLink: 'http://www.cbrc.gov.cn/chinese/newShouDoc/BB8E3EEC78EA4281ADF4A55325AFE271.html',
+                        contrLevel1: '公司治理，运营管理',
+                        contrLevel2: '关联交易，承保管理',
+                        contrLevel3: '关联方管理，保单缮制',
+                        status: '0'
+                    }, {
+                        name: "中国银保监会关于开展“巩固治乱象成果 促进合规建设”工作的通知",
+                        code: "银保监发〔2019〕23号",
+                        institution: "中国银保监会",
+                        publishDate: '2019年5月8日',
+                        performDate: '2019年5月23日',
+                        grade: '规范性文件',
+                        mainUnit: '各银保监局，各政策性银行、大型银行、股份制银行，邮储银行，外资银行，各金融资产管理公司，各保险集团（控股）公司、保险公司、保险资产管理公司',
+                        performUnit: '各银保监局，各政策性银行、大型银行、股份制银行，邮储银行，外资银行，各金融资产管理公司，各保险集团（控股）公司、保险公司、保险资产管理公司',
+                        unitStatus: '现行有效',
+                        originLink: 'http://www.cbrc.gov.cn/chinese/newShouDoc/BB8E3EEC78EA4281ADF4A55325AFE271.html',
+                        contrLevel1: '公司治理，运营管理',
+                        contrLevel2: '关联交易，承保管理',
+                        contrLevel3: '关联方管理，保单缮制',
+                        status: '1'
+                    }
+                ];
+            }, 500);
+            
+        },
+        onSearch() {
+            this.query();
+            console.log(this.form)
+        },
+        view(row) {
+            console.log(row)
+        },
+        goAudit(row) {
+            window.location.href = location.origin + '/html/rule_audit_1.html';
+        },
+        deleteDate(row) {
+            console.log(row)
+        },
+        changePageSize(size) {
+            console.log(888888, size)
+        },
+        styleH() {
+            return {background: '#fbfbfb', textAlign: 'center', color: '#333'}
+        },
+    }
+})
+</script>

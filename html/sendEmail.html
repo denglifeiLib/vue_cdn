@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+
+    <script src="../js/vue.min.js"></script>
+    <!-- 引入样式 -->
+    <!-- <link rel="stylesheet" href="../css/element.css"> -->
+    <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+    <!-- 引入组件库 -->
+    <script src="../js/element.min.js"></script>
+</head>
+<style>
+    .d_container{
+        padding: 30px;
+    }
+    .d_btm_btn{
+        margin-top: 80px;
+        padding-right: 120px;
+        text-align: center;
+    }
+    .d_btm_btn .el-button{
+        padding: 12px 45px;
+    }
+    .flex{
+        display: flex;
+    }
+    .fix_w{
+        margin-left: 15px;
+        flex-grow: 0;
+        flex-shrink: 0;
+    }
+</style>
+<body>
+    <div id="refApp">
+        <div class="d_container">
+            <el-row>
+                <el-col :sm="16" :offset="4">
+                    <el-form ref="form" :model="form" label-width="100px" label-position="left">
+                        <el-form-item>
+                            <el-button @click="goback" slot="label">返回</el-button>
+                        </el-form-item>
+                        <el-form-item label="收件人地址">
+                            <div class="flex">
+                                <el-input v-model="form.address"></el-input>
+                                <el-button type="primary" @click="send" class="fix_w">发送</el-button>
+                            </div>
+                        </el-form-item>
+                        <el-form-item label="抄送">
+                            <el-input v-model="form.ccAddress"></el-input>
+                        </el-form-item>
+                        <el-form-item label="标题">
+                            <el-input v-model="form.title"></el-input>
+                        </el-form-item>
+                        <el-form-item label="正文">
+                            <el-input type="textarea" rows="6" v-model="form.content"></el-input>
+                        </el-form-item>
+                        <el-form-item label="附件">
+                            <el-upload
+                                class="upload-demo"
+                                accept="*"
+                                action="https://jsonplaceholder.typicode.com/posts/"
+                                :before-remove="beforeRemove"
+                                multiple
+                                :limit="3"
+                                :on-exceed="handleExceed"
+                                :file-list="form.fileList">
+                                <el-button size="small">选择附件</el-button>
+                                <!-- <div slot="tip" class="el-upload__tip">只能上传jpg/png文件，且不超过500kb</div> -->
+                            </el-upload>
+                        </el-form-item>
+                    </el-form>
+                </el-col>
+            </el-row>
+            
+        </div>
+        
+    </div>
+</body>
+</html>
+
+<script>
+new Vue({
+    el: '#refApp',
+    
+    data: {
+        form: {
+            address: '',
+            ccAddress: '',
+            title: '',
+            content: '',
+            fileList: []
+        }
+    },
+    mounted() {
+        this.query();
+    },
+    methods: {
+        query() {},
+        send() {
+            const param = this.form;
+            console.log('send handle', param)
+        },
+        goback() {
+            window.location.href = './analyse_weekly.html'
+        },
+        changeWeek(va) {
+            this.weekDisplayValue = this.$refs.week.displayValue;
+        },
+        handleExceed(files, fileList) {
+            this.$message.warning(`当前限制选择 3 个文件，本次选择了 ${files.length} 个文件，共选择了 ${files.length + fileList.length} 个文件`);
+        },
+        beforeRemove(file, fileList) {
+            return this.$confirm(`确定移除 ${ file.name }？`);
+        }
+    }
+})
+</script>

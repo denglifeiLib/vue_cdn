@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+
+    <script src="../js/vue.min.js"></script>
+    <!-- 引入样式 -->
+    <!-- <link rel="stylesheet" href="../css/element.css"> -->
+    <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+    <!-- 引入组件库 -->
+    <script src="../js/element.min.js"></script>
+</head>
+<style>
+    .d_container{
+        padding: 30px;
+    }
+    .d_form{
+       margin-top: 60px;
+    }
+    .d_btm_btn{
+        margin-top: 80px;
+        padding-right: 120px;
+        text-align: center;
+    }
+    .d_btm_btn .el-button{
+        padding: 12px 45px;
+    }
+</style>
+<body>
+    <div id="refApp">
+        <div class="d_container">
+            <el-steps :active="0" simple>
+                <el-step v-for="(step,k) in steps" :key="k" :title="step.label" :icon="step.icon" :status="step.status"></el-step>
+            </el-steps>
+
+            <el-form ref="form" :model="form" label-width="140px" class="d_form">
+                <el-form-item label="发文名称">
+                    <el-input v-model="form.name"></el-input>
+                </el-form-item>
+                <el-form-item label="发文文号">
+                    <el-input v-model="form.code"></el-input>
+                </el-form-item>
+                <el-form-item label="发文机构分类">
+                    <el-select v-model="form.institution" multiple placeholder="请选择" style="width: 100%">
+                        <el-option
+                            v-for="item in institutionList"
+                            :key="item.value"
+                            :label="item.label"
+                            :value="item.value">
+                        </el-option>
+                    </el-select>
+                </el-form-item>
+                <el-form-item label="发文日期">
+                    <el-date-picker
+                        v-model="form.publishDate"
+                        type="date"
+                        placeholder="选择日期">
+                    </el-date-picker>
+                </el-form-item>
+                <el-form-item label="实施日期">
+                    <el-date-picker
+                        v-model="form.performDate"
+                        type="date"
+                        placeholder="选择日期">
+                    </el-date-picker>
+                </el-form-item>
+                <el-form-item label="效力级别">
+                    <el-select v-model="form.grade" multiple placeholder="请选择" style="width: 100%">
+                        <el-option
+                            v-for="item in gradeList"
+                            :key="item.value"
+                            :label="item.label"
+                            :value="item.value">
+                        </el-option>
+                    </el-select>
+                </el-form-item>
+                <el-form-item label="主送单位">
+                    <el-input v-model="form.mainUnit"></el-input>
+                </el-form-item>
+                <el-form-item label="制度状态">
+                    <el-input v-model="form.unitStatus"></el-input>
+                </el-form-item>
+                <el-form-item label="原文链接">
+                    <el-input v-model="form.originLink"></el-input>
+                </el-form-item>
+                <el-form-item>
+                    <div class="d_btm_btn">
+                        <el-button type="primary" @click="save">数据暂存</el-button>
+                        <el-button @click="next">下一步</el-button>
+                    </div>
+                </el-form-item>
+            </el-form>
+        </div>
+        
+    </div>
+</body>
+</html>
+
+<script>
+new Vue({
+    el: '#refApp',
+    
+    data: {
+        form: {
+            name: '',
+            code: '',
+            institution: [],
+            publishDate: '',
+            performDate: '',
+            grade: [],
+            mainUnit: '',
+            unitStatus: '',
+            originLink: ''
+        },
+        steps: [
+            {
+                label: '爬虫数据修改',
+                icon: 'el-icon-edit',
+                status: 'finish'
+            }, {
+                label: '设置落实机构',
+                icon: 'el-icon-office-building',
+                status: 'wait'
+            }, {
+                label: '设置控制领域',
+                icon: 'el-icon-coin',
+                status: 'wait'
+            }
+        ],
+        institutionList: [
+            {
+                value: '0',
+                label: '全国人民代表大会'
+            }, {
+                value: '1',
+                label: '全国人民代表大会常务委员会国务院'
+            }, {
+                value: '2',
+                label: '省,自治区,直辖市的人民代表大会及其常务委员会'
+            }, {
+                value: '3',
+                label: '中华人民共和国外交部'
+            }, {
+                value: '4',
+                label: '中华人民共和国科学技术部'
+            }
+        ],
+        gradeList: [
+            {
+                value: '0',
+                label: '规范性文件'
+            }, {
+                value: '1',
+                label: '法律'
+            }, {
+                value: '2',
+                label: '通知及函'
+            }, {
+                value: '3',
+                label: '法规'
+            }, {
+                value: '4',
+                label: '规章'
+            }
+        ],
+    },
+    mounted() {
+        this.query();
+    },
+    methods: {
+        query() {
+            this.form = {
+                name: "中国银保监会关于开展“巩固治乱象成果 促进合规建设”工作的通知",
+                code: "银保监发〔2019〕23号",
+                institution: ['0', '3'],
+                publishDate: '2019-5-8',
+                performDate: '2019-11-8',
+                grade: ['0', '1'],
+                mainUnit: '各银保监局，各政策性银行、大型银行、股份制银行，邮储银行，外资银行，各金融资产管理公司，各保险集团（控股）公司、保险公司、保险资产管理公司',
+                performUnit: '各银保监局，各政策性银行、大型银行、股份制银行，邮储银行，外资银行，各金融资产管理公司，各保险集团（控股）公司、保险公司、保险资产管理公司',
+                unitStatus: '现行有效',
+                originLink: 'http://www.cbrc.gov.cn/chinese/newShouDoc/BB8E3EEC78EA4281ADF4A55325AFE271.html',
+                contrLevel1: '公司治理，运营管理',
+                contrLevel2: '关联交易，承保管理',
+                contrLevel3: '关联方管理，保单缮制',
+                status: '0'
+            }
+        },
+        save() {
+            console.log(this.form)
+        },
+        next(row) {
+            window.location.href = './rule_audit_2.html';
+        }
+    }
+})
+</script>

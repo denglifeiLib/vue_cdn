@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+
+    <script src="../js/vue.min.js"></script>
+    <!-- 引入样式 -->
+    <!-- <link rel="stylesheet" href="../css/element.css"> -->
+    <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+    <!-- 引入组件库 -->
+    <script src="../js/element.min.js"></script>
+</head>
+<style>
+    .d_container{
+        padding: 30px;
+    }
+    .mt20{
+        margin-top: 20px;
+    }
+    .d_container .ml20{
+        margin-left: 20px;
+    }
+    .d_tabel_tt{
+        margin: 40px 0 25px;
+        text-align: center;
+    }
+</style>
+<body>
+    <div id="refApp">
+        <div class="d_container">
+            <div>
+                选择周：
+                <el-date-picker
+                    ref="week"
+                    v-model="week"
+                    type="week"
+                    format="yyyy年MM月第WW周"
+                    placeholder="选择周">
+                </el-date-picker>
+                <el-button class="ml20" type="primary" @click="onSearch">搜索</el-button>
+                <el-button class="ml20" type="primary" @click="download">文件导出</el-button>
+            </div>
+
+            <h3 class="d_tabel_tt">{{weekDisplayValue}}监管政策统计表</h3>
+            <!-- tabel -->
+            <el-table :data="tableData" border style="width: 100%;" :header-cell-style="styleH" v-loading="loading">
+                <el-table-column type="index" label="序号" width="50" fixed></el-table-column>
+                <el-table-column prop="name" label="发文名称" width="150" fixed></el-table-column>
+                <el-table-column prop="code" label="发文文号" width="100"></el-table-column>
+                <el-table-column prop="institution" label="发文机构" width="120"></el-table-column>
+                <el-table-column prop="publishDate" label="发文日期" width="120"></el-table-column>
+                <el-table-column prop="performDate" label="实施日期" width="120"></el-table-column>
+                <el-table-column prop="grade" label="效力级别" width="100"></el-table-column>
+                <el-table-column prop="contrLevel1" label="控制领域一级" width="150"></el-table-column>
+                <el-table-column prop="contrLevel2" label="控制领域二级" width="150"></el-table-column>
+                <el-table-column prop="contrLevel3" label="控制领域三级" width="150"></el-table-column>
+                <el-table-column prop="mainUnit" label="主送单位" width="200"></el-table-column>
+                <el-table-column prop="matchUnit" label="适用机构" width="200"></el-table-column>
+                <el-table-column prop="originLink" label="原文链接" width="220"></el-table-column>
+            </el-table>
+        </div>
+        
+    </div>
+</body>
+</html>
+
+<script>
+new Vue({
+    el: '#refApp',
+    
+    data: {
+        week: new Date(),
+        weekDisplayValue: '',
+        tableData: [],
+        loading: false
+    },
+    mounted() {
+        this.query();
+    },
+    methods: {
+        query() {
+            this.loading = true;
+            this.weekDisplayValue = this.$refs.week.displayValue;
+
+            setTimeout(()=>{
+                this.loading = false;
+                this.tableData = [
+                    {
+                        name: "中国银保监会关于开展“巩固治乱象成果 促进合规建设”工作的通知",
+                        code: "银保监发〔2019〕23号",
+                        institution: "中国银保监会",
+                        publishDate: '2019年5月8日',
+                        performDate: '2019年5月23日',
+                        grade: '规范性文件',
+                        mainUnit: '各银保监局，各政策性银行、大型银行、股份制银行，邮储银行，外资银行，各金融资产管理公司，各保险集团（控股）公司、保险公司、保险资产管理公司',
+                        matchUnit: '各银保监局，各政策性银行、大型银行、股份制银行，邮储银行，外资银行，各金融资产管理公司，各保险集团（控股）公司、保险公司、保险资产管理公司',
+                        originLink: 'http://www.cbrc.gov.cn/chinese/newShouDoc/BB8E3EEC78EA4281ADF4A55325AFE271.html',
+                        contrLevel1: '公司治理，运营管理',
+                        contrLevel2: '关联交易，承保管理',
+                        contrLevel3: '关联方管理，保单缮制',
+                        status: '0'
+                    }, {
+                        name: "中国银保监会关于开展“巩固治乱象成果 促进合规建设”工作的通知",
+                        code: "银保监发〔2019〕23号",
+                        institution: "中国银保监会",
+                        publishDate: '2019年5月8日',
+                        performDate: '2019年5月23日',
+                        grade: '规范性文件',
+                        mainUnit: '各银保监局，各政策性银行、大型银行、股份制银行，邮储银行，外资银行，各金融资产管理公司，各保险集团（控股）公司、保险公司、保险资产管理公司',
+                        matchUnit: '各银保监局，各政策性银行、大型银行、股份制银行，邮储银行，外资银行，各金融资产管理公司，各保险集团（控股）公司、保险公司、保险资产管理公司',
+                        originLink: 'http://www.cbrc.gov.cn/chinese/newShouDoc/BB8E3EEC78EA4281ADF4A55325AFE271.html',
+                        contrLevel1: '公司治理，运营管理',
+                        contrLevel2: '关联交易，承保管理',
+                        contrLevel3: '关联方管理，保单缮制',
+                        status: '1'
+                    }
+                ];
+            }, 500)
+            
+            
+        },
+        onSearch() {
+            this.query();
+        },
+        download() {
+
+        },
+        styleH() {
+            return {background: '#f5f5f5'}
+        }
+    }
+})
+</script>

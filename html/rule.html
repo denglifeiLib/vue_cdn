@@ -8,8 +8,7 @@
 
     <script src="../js/vue.min.js"></script>
     <!-- 引入样式 -->
-    <!-- <link rel="stylesheet" href="../css/element.css"> -->
-    <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+    <link rel="stylesheet" href="../css/element.css">
     <!-- 引入组件库 -->
     <script src="../js/element.min.js"></script>
 </head>
@@ -23,6 +22,15 @@
     .d_pagination{
         margin-top: 30px;
         text-align: center;
+    }
+    .d_steps{
+       margin-bottom: 30px;
+    }
+    .d_dialog .el-dialog__body{
+        padding: 30px;
+    }
+    .mt20{
+        margin-top: 20px;
     }
 </style>
 <body>
@@ -111,7 +119,111 @@
                 :total="80">
             </el-pagination>
         </div>
-        
+        <!-- 爬虫数据修改 -->
+        <el-dialog title="监管制度数据审核" :visible="dialogVisible" class="d_dialog" :center="true" @close="dialogVisible=false">
+            <div>
+                <el-steps :active="activeStep" simple class="d_steps">
+                    <el-step v-for="(step,k) in steps" :key="k" :title="step.label" :icon="step.icon" :status="step.status"></el-step>
+                </el-steps>
+                <div v-show="activeStep===0">
+                    <el-form ref="form" :model="form" label-width="100px">
+                        <el-form-item label="发文名称">
+                            <el-input v-model="audit_form_info.name"></el-input>
+                        </el-form-item>
+                        <el-form-item label="发文文号">
+                            <el-input v-model="audit_form_info.code"></el-input>
+                        </el-form-item>
+                        <el-form-item label="发文机构分类">
+                            <el-select v-model="audit_form_info.institution" multiple placeholder="请选择" style="width: 100%">
+                                <el-option
+                                    v-for="item in institutionList"
+                                    :key="item.value"
+                                    :label="item.label"
+                                    :value="item.value">
+                                </el-option>
+                            </el-select>
+                        </el-form-item>
+                        <el-form-item label="发文日期">
+                            <el-date-picker
+                                v-model="audit_form_info.publishDate"
+                                type="date"
+                                placeholder="选择日期">
+                            </el-date-picker>
+                        </el-form-item>
+                        <el-form-item label="实施日期">
+                            <el-date-picker
+                                v-model="audit_form_info.performDate"
+                                type="date"
+                                placeholder="选择日期">
+                            </el-date-picker>
+                        </el-form-item>
+                        <el-form-item label="效力级别">
+                            <el-select v-model="audit_form_info.grade" multiple placeholder="请选择" style="width: 100%">
+                                <el-option
+                                    v-for="item in gradeList"
+                                    :key="item.value"
+                                    :label="item.label"
+                                    :value="item.value">
+                                </el-option>
+                            </el-select>
+                        </el-form-item>
+                        <el-form-item label="主送单位">
+                            <el-input v-model="audit_form_info.mainUnit"></el-input>
+                        </el-form-item>
+                        <el-form-item label="制度状态">
+                            <el-input v-model="audit_form_info.unitStatus"></el-input>
+                        </el-form-item>
+                        <el-form-item label="原文链接">
+                            <el-input v-model="audit_form_info.originLink"></el-input>
+                        </el-form-item>
+                    </el-form>
+                </div>
+                <div v-show="activeStep===1">
+                    <el-row :gutter="20">
+                        <el-col :span="3">原文链接</el-col>
+                        <el-col :span="21">{{audit_form_info.originLink}}</el-col>
+                    </el-row>
+                    <el-row :gutter="20" class="mt20">
+                        <el-col :span="3">PDF附件</el-col>
+                        <el-col :span="21">{{audit_form_info.attachment}}</el-col>
+                    </el-row>
+                    <el-checkbox-group v-model="audit_form_info.performUnit" >
+                        <el-row :gutter="20" class="mt20">
+                            <el-col :sm="24" :md="12" v-for="(unit,k) in performUnitList" :key="k"  class="mt20">
+                                <el-checkbox :label="unit.value" border>{{unit.label}}</el-checkbox>
+                            </el-col>
+                        </el-row>
+                    </el-checkbox-group>
+                </div>
+                <div v-show="activeStep===2">
+                    <el-row :gutter="20">
+                        <el-col :span="3">原文链接</el-col>
+                        <el-col :span="21">{{audit_form_info.originLink}}</el-col>
+                    </el-row>
+                    <el-row :gutter="20" class="mt20">
+                        <el-col :span="3">PDF附件</el-col>
+                        <el-col :span="21">{{audit_form_info.attachment}}</el-col>
+                    </el-row>
+                    <el-table :data="audit_form_info.controlAreaTable" border :header-cell-style="styleH" style="width: 100%;margin-top: 40px;" :span-method="objectSpanMethod">
+                        <el-table-column prop="contrLevel1" label="控制领域一级" width="150"></el-table-column>
+                        <el-table-column prop="contrLevel2" label="控制领域二级" width="150"></el-table-column>
+                        <el-table-column prop="contrLevel3" label="控制领域三级">
+                            <template slot-scope="scope">
+                                <el-checkbox-group v-model="controlAreaData">
+                                    <el-checkbox :label="unit.value" v-for="(unit,k) in scope.row.contrLevel3" :key="k">{{unit.label}}</el-checkbox>
+                                </el-checkbox-group>
+                            </template>
+                        </el-table-column>
+                    </el-table>
+                </div>
+            </div>
+            <span slot="footer" class="dialog-footer">
+                <el-button @click="changeStep(--activeStep)" v-show="activeStep!==0">上一步</el-button>
+                <el-button type="primary" @click="save">数据暂存</el-button>
+                <el-button @click="changeStep(++activeStep)" v-show="activeStep!==steps.length-1">下一步</el-button>
+                <el-button @click="confirm" type="danger" v-show="activeStep==steps.length-1">确认审核</el-button>
+            </span>
+        </el-dialog>
     </div>
 </body>
 </html>
@@ -119,7 +231,6 @@
 <script>
 new Vue({
     el: '#refApp',
-    
     data: {
         form: {
             status: [],
@@ -131,6 +242,39 @@ new Vue({
             page: 1
         },
         loading: false,
+
+        dialogVisible: false,
+        activeStep: 0,
+        steps: [
+            {
+                label: '爬虫数据修改',
+                icon: 'el-icon-edit',
+                status: 'finish'
+            }, {
+                label: '设置落实机构',
+                icon: 'el-icon-office-building',
+                status: 'wait'
+            }, {
+                label: '设置控制领域',
+                icon: 'el-icon-coin',
+                status: 'wait'
+            }
+        ],
+        audit_form_info: {
+            name: '',
+            code: '',
+            institution: [],
+            publishDate: '',
+            performDate: '',
+            grade: [],
+            mainUnit: '',
+            unitStatus: '',
+            originLink: '',
+            performUnit: [],
+        },
+        controlAreaData: [],
+
+
         statusList: [
             {
                 value: '0',
@@ -155,9 +299,70 @@ new Vue({
                 label: '上海国有资产监督管理委员会'
             }
         ],
+        gradeList: [
+            {
+                value: '0',
+                label: '规范性文件'
+            }, {
+                value: '1',
+                label: '法律'
+            }, {
+                value: '2',
+                label: '通知及函'
+            }, {
+                value: '3',
+                label: '法规'
+            }, {
+                value: '4',
+                label: '规章'
+            }
+        ],
+        performUnitList: [
+            {
+                value: '0',
+                label: '中国太平洋保险（集团）股份有限公司'
+            }, {
+                value: '1',
+                label: '太平洋资产管理有限责任公司'
+            }, {
+                value: '2',
+                label: '中国太平洋人寿保险股份有限公司'
+            }, {
+                value: '3',
+                label: '安信农业保险股份有限公司'
+            }, {
+                value: '4',
+                label: '中国太平洋财产保险股份有限公司'
+            }, {
+                value: '5',
+                label: '长江养老保险股份有限公司'
+            }, {
+                value: '6',
+                label: '太保安联健康保险股份有限公司'
+            }, {
+                value: '7',
+                label: '太平洋保险养老产业投资管理有限责任公司'
+            }
+        ]
     },
     mounted() {
         this.query()
+    },
+    watch: {
+        activeStep(val) {
+            this.steps = this.steps.map((item,index)=>{
+                if(index<val){
+                    item.status = 'process'
+                }
+                if(index===val){
+                    item.status = 'finish'
+                }
+                if(index>val){
+                    item.status = 'wait'
+                }
+                return item;
+            });
+        }
     },
     methods: {
         query(page) {
@@ -209,7 +414,8 @@ new Vue({
             console.log(row)
         },
         goAudit(row) {
-            window.location.href = location.origin + '/html/rule_audit_1.html';
+            this.dialogVisible = true;
+            this.queryAuditInfo();
         },
         deleteDate(row) {
             console.log(row)
@@ -220,6 +426,128 @@ new Vue({
         styleH() {
             return {background: '#fbfbfb', textAlign: 'center', color: '#333'}
         },
+
+        queryAuditInfo() {
+            this.audit_form_info = {
+                name: "中国银保监会关于开展“巩固治乱象成果 促进合规建设”工作的通知",
+                code: "银保监发〔2019〕23号",
+                institution: ['0', '3'],
+                publishDate: '2019-5-8',
+                performDate: '2019-11-8',
+                grade: ['0', '1'],
+                mainUnit: '各银保监局，各政策性银行、大型银行、股份制银行，邮储银行，外资银行，各金融资产管理公司，各保险集团（控股）公司、保险公司、保险资产管理公司',
+                unitStatus: '现行有效',
+                originLink: 'http://www.cbrc.gov.cn/chinese/newShouDoc/BB8E3EEC78EA4281ADF4A55325AFE271.html',
+                contrLevel1: '公司治理，运营管理',
+                contrLevel2: '关联交易，承保管理',
+                contrLevel3: '关联方管理，保单缮制',
+                status: '0',
+                attachment: 'BB8E3EEC78EA4281ADF4A55325AFE271.pdf',
+                performUnit: ['0', '1', '2', '3', '4', '5', '6', '7'],
+                controlAreaTable: [
+                    {
+                        contrLevel1: '公司治理',
+                        contrLevel2: '关联交易',
+                        contrLevel3: [
+                            {
+                                label: '关联方管理',
+                                value: 'a1'
+                            }, {
+                                label: '关联交易识别与审核',
+                                value: 'a2'
+                            }, {
+                                label: '关联交易披露与报送',
+                                value: 'a3'
+                            }
+                        ]
+                    }, {
+                        contrLevel1: '公司治理',
+                        contrLevel2: '信息披露',
+                        contrLevel3: [
+                            {
+                                label: '信息收集与传递',
+                                value: 'b1'
+                            }, {
+                                label: '对外披露信息',
+                                value: 'b2'
+                            }, {
+                                label: '内幕信息管理',
+                                value: 'b3'
+                            },
+                        ]
+                    }, {
+                        contrLevel1: '公司治理',
+                        contrLevel2: '股权管理',
+                        contrLevel3: [
+                            {
+                                label: '股东资质',
+                                value: 'c1'
+                            }, {
+                                label: '股权取得',
+                                value: 'c2'
+                            }, {
+                                label: '股东行为',
+                                value: 'c3'
+                            }, {
+                                label: '股权事务',
+                                value: 'c4'
+                            }
+                        ]
+                    }, {
+                        contrLevel1: '公司治理',
+                        contrLevel2: '三会管理',
+                        contrLevel3: [
+                            {
+                                label: '会议组织',
+                                value: 'd1'
+                            }, {
+                                label: '会议资料管理',
+                                value: 'd2'
+                            }
+                        ]
+                    }
+                ]
+            }
+        },
+        save() {
+            this.audit_form_info.controlAreaData = this.controlAreaData;
+            console.log(this.audit_form_info)
+        },
+        changeStep(step) {
+           this.activeStep = step;
+        },
+        confirm() {
+            this.$confirm('审核通过后将无法修改数据', '提示', {
+                confirmButtonText: '确定',
+                cancelButtonText: '取消',
+                type: 'warning'
+            }).then(() => {
+                this.confirmAudit();
+            });
+        },
+        confirmAudit() {
+            this.dialogVisible = false;
+            this.$message({
+                type: 'success',
+                message: '数据审核通过!'
+            });
+            this.activeStep = 0;
+        },
+        objectSpanMethod({ row, column, rowIndex, columnIndex }) {
+            if (columnIndex === 0) {
+                if (rowIndex % 4 === 0) {
+                    return {
+                        rowspan: 4,
+                        colspan: 1
+                    };
+                } else {
+                    return {
+                        rowspan: 0,
+                        colspan: 0
+                    };
+                }
+            }
+        }
     }
 })
 </script>

@@ -187,13 +187,17 @@
                         <el-col :span="3">PDF附件</el-col>
                         <el-col :span="21">{{audit_form_info.attachment}}</el-col>
                     </el-row>
-                    <el-checkbox-group v-model="audit_form_info.performUnit" >
-                        <el-row :gutter="20" class="mt20">
-                            <el-col :sm="24" :md="12" v-for="(unit,k) in performUnitList" :key="k"  class="mt20">
-                                <el-checkbox :label="unit.value" border>{{unit.label}}</el-checkbox>
-                            </el-col>
-                        </el-row>
-                    </el-checkbox-group>
+                    <el-table :data="audit_form_info.controlAreaTable" border :header-cell-style="styleH" style="width: 100%;margin-top: 40px;" :span-method="objectSpanMethod">
+                            <el-table-column prop="contrLevel1" label="控制领域一级" width="150"></el-table-column>
+                            <el-table-column prop="contrLevel2" label="控制领域二级" width="150"></el-table-column>
+                            <el-table-column prop="contrLevel3" label="控制领域三级">
+                                <template slot-scope="scope">
+                                    <el-checkbox-group v-model="controlAreaData">
+                                        <el-checkbox :label="unit.value" v-for="(unit,k) in scope.row.contrLevel3" :key="k">{{unit.label}}</el-checkbox>
+                                    </el-checkbox-group>
+                                </template>
+                            </el-table-column>
+                        </el-table>
                 </div>
                 <div v-show="activeStep===2">
                     <el-row :gutter="20">

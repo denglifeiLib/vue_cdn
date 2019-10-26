@@ -1,0 +1,685 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+
+    <script src="../js/vue.min.js"></script>
+    <!-- 引入样式 -->
+    <link rel="stylesheet" href="../css/element.css">
+    <!-- 引入组件库 -->
+    <script src="../js/element.min.js"></script>
+</head>
+<style>
+    .d_container{
+        padding: 30px;
+    }
+    .d_search{
+        min-height: 100px;
+    }
+    .d_pagination{
+        margin-top: 30px;
+        text-align: center;
+    }
+    .d_steps{
+       margin-bottom: 30px;
+    }
+    .d_dialog .el-dialog__body{
+        padding: 30px;
+    }
+    .mt20{
+        margin-top: 20px;
+    }
+</style>
+<body>
+    <div id="refApp">
+        <div class="d_container">
+            <!-- onSearch -->
+             <el-form :inline="true" :model="form" class="d_search">
+                <el-form-item label="数据状态">
+                    <el-select v-model="form.status" multiple placeholder="请选择">
+                        <el-option
+                            v-for="item in statusList"
+                            :key="item.value"
+                            :label="item.label"
+                            :value="item.value">
+                        </el-option>
+                    </el-select>
+                </el-form-item>
+                <el-form-item label="发文机构分类">
+                    <el-select v-model="form.punishedTarget" multiple placeholder="请选择">
+                        <el-option
+                            v-for="item in punishedTargetList"
+                            :key="item.value"
+                            :label="item.label"
+                            :value="item.value">
+                        </el-option>
+                    </el-select>
+                </el-form-item>
+                <el-form-item label="处罚日期">
+                    <el-date-picker
+                        v-model="form.dateRange"
+                        type="daterange"
+                        range-separator="至"
+                        start-placeholder="开始日期"
+                        end-placeholder="结束日期">
+                    </el-date-picker>
+                </el-form-item>
+                <el-form-item>
+                    <el-button type="primary" @click="onSearch">搜索</el-button>
+                </el-form-item>
+            </el-form>
+    
+            <!-- tabel -->
+            <el-table :data="tableData" border style="width: 100%;" v-loading="loading" :header-cell-style="styleH">
+                <el-table-column prop="punishDate" label="处罚日期" width="130"></el-table-column>
+                <el-table-column prop="institution" label="机构名称" width="150"></el-table-column>
+                <el-table-column prop="person_name" label="当事人姓名" width="100px"></el-table-column>
+                <el-table-column prop="agency_name" label="中介机构名称" width="140px"></el-table-column>
+                <el-table-column prop="punish_sheet_unit" label="机构罚单" width="60px"></el-table-column>
+                <el-table-column prop="punish_sheet_person" label="个人罚单" width="60px"></el-table-column>
+                <el-table-column prop="punish_sheet_agency" label="中介机构罚单" width="60px"></el-table-column>
+                <el-table-column prop="unit_punish_list" label="各类违规行为对应的机构罚款金额" width="180px">
+                    <template slot-scope="scope">
+                        <p v-for="(item,k) in scope.row.unit_punish_list" :key="k">{{item}}</p>
+                    </template>
+                </el-table-column>
+                <el-table-column prop="person_punish_list" label="各类违规行为对应的个人罚款金额" width="180px">
+                    <template slot-scope="scope">
+                        <p v-for="(item,k) in scope.row.person_punish_list" :key="k">{{item}}</p>
+                    </template>
+                </el-table-column>
+                <el-table-column prop="agency_punish_list" label="各类违规行为对应的中介机构罚款金额" width="180px">
+                    <template slot-scope="scope">
+                        <p v-for="(item,k) in scope.row.agency_punish_list" :key="k">{{item}}</p>
+                    </template>
+                </el-table-column>
+                <el-table-column prop="unit_warn_list" label="机构警告" width="180px">
+                    <template slot-scope="scope">
+                        <p v-for="(item,k) in scope.row.unit_warn_list" :key="k">{{item}}</p>
+                    </template>
+                </el-table-column>
+                <el-table-column prop="person_warn_list" label="个人警告" width="180px">
+                    <template slot-scope="scope">
+                        <p v-for="(item,k) in scope.row.person_warn_list" :key="k">{{item}}</p>
+                    </template>
+                </el-table-column>
+                <el-table-column prop="agency_warn_list" label="中介警告" width="180px">
+                    <template slot-scope="scope">
+                        <p v-for="(item,k) in scope.row.agency_warn_list" :key="k">{{item}}</p>
+                    </template>
+                </el-table-column>
+                <el-table-column prop="break_servie" label="停止新业务" width="70px"></el-table-column>
+                <el-table-column prop="break_servie_dis" label="停止新业务备注" width="160px"></el-table-column>
+                <el-table-column prop="disqualification" label="撤销任职资格" width="100px"></el-table-column>
+                <el-table-column prop="punishReason" label="处罚事由" width="280px">
+                    <template slot-scope="scope">
+                        <p v-for="(item,k) in scope.row.punishReason" :key="k">{{item}}</p>
+                    </template>
+                </el-table-column>
+                <el-table-column prop="punishContent" label="处罚内容" width="280px">
+                    <template slot-scope="scope">
+                        <p v-for="(item,k) in scope.row.punishContent" :key="k">{{item}}</p>
+                    </template>
+                </el-table-column>
+                <el-table-column prop="punishCode" label="处罚文号" width="120px"></el-table-column>
+                <el-table-column prop="punishArea" label="地区" width="80px"></el-table-column>
+                <el-table-column prop="punishLink" label="处罚信息网址" width="240px"></el-table-column>
+                <el-table-column prop="punishLabel1" label="处罚标签一级" width="150">
+                    <template slot-scope="scope">
+                        <p v-for="(item,k) in scope.row.punishLabel1" :key="k">{{item}}</p>
+                    </template>
+                </el-table-column>
+                <el-table-column prop="punishLabel2" label="处罚标签二级" width="150">
+                    <template slot-scope="scope">
+                        <p v-for="(item,k) in scope.row.punishLabel2" :key="k">{{item}}</p>
+                    </template>
+                </el-table-column>
+                <el-table-column prop="punishLabel3" label="处罚标签三级" width="150">
+                    <template slot-scope="scope">
+                        <p v-for="(item,k) in scope.row.punishLabel3" :key="k">{{item}}</p>
+                    </template>
+                </el-table-column>
+                <el-table-column prop="status" label="数据状态" width="150">
+                    <template slot-scope="scope">
+                        {{scope.row.status === '0' ? '待确认' : '已确认'}}
+                    </template>
+                </el-table-column>
+                <el-table-column  label="PDF附件" width="150">
+                    <template slot-scope="scope">
+                        <el-button size="small" @click="view(scope.row)" type="primary">查看</el-button>
+                    </template>
+                </el-table-column>
+                <el-table-column prop="punishSheetList" label="罚单合并" width="150"></el-table-column>
+                <el-table-column prop="date" label="操作" width="150" fixed="right">
+                    <template slot-scope="scope">
+                        <div style="text-align: center;" v-if="scope.row.status === '0'">
+                            <el-button size="small" @click="goAudit(scope.row)" type="primary">数据审核</el-button> <br> <br>
+                            <el-button size="small" @click="deleteDate(scope.row)">数据删除</el-button>
+                        </div>
+                    </template>
+                </el-table-column>
+            </el-table>
+    
+            <el-pagination
+                class="d_pagination"
+                @size-change="changePageSize"
+                @current-change="query"
+                :current-page="pagenation.page"
+                :page-sizes="[10, 20, 50, 100]"
+                :page-size="10"
+                layout="total, sizes, prev, pager, next, jumper"
+                :total="80">
+            </el-pagination>
+        </div>
+        <!-- 爬虫数据修改 -->
+        <el-dialog title="监管处罚数据审核" :visible="dialogVisible" class="d_dialog" :center="true" @close="dialogVisible=false" width="80%">
+            <div>
+                <el-steps :active="activeStep" simple class="d_steps">
+                    <el-step v-for="(step,k) in steps" :key="k" :title="step.label" :icon="step.icon" :status="step.status"></el-step>
+                </el-steps>
+                <div v-show="activeStep===0">
+                    <el-form ref="form" :model="form" label-width="140px">
+                        <el-form-item label="处罚日期">
+                            <el-input v-model="audit_form_info.punishDate"></el-input>
+                        </el-form-item>
+                        <el-form-item label="机构名称">
+                            <el-input v-model="audit_form_info.institution"></el-input>
+                        </el-form-item>
+                        <el-form-item label="当事人姓名">
+                            <el-input v-model="audit_form_info.person_name"></el-input>
+                        </el-form-item>
+                        <el-form-item label="中介机构名称">
+                            <el-input v-model="audit_form_info.agency_name"></el-input>
+                        </el-form-item>
+                        <el-form-item label="机构罚单">
+                            <el-input v-model="audit_form_info.punish_sheet_unit"></el-input>
+                        </el-form-item>
+                        <el-form-item label="个人罚单">
+                            <el-input v-model="audit_form_info.punish_sheet_person"></el-input>
+                        </el-form-item>
+                        <el-form-item label="中介机构罚单">
+                            <el-input v-model="audit_form_info.punish_sheet_agency"></el-input>
+                        </el-form-item>
+                        <el-form-item label="违规行为">
+                            <el-input v-model="audit_form_info.violation"></el-input>
+                        </el-form-item>
+                        <el-form-item label="各类违规行为对应的机构罚款金额">
+                            <el-input v-model="audit_form_info.unit_punish_list"></el-input>
+                        </el-form-item>
+                        <el-form-item label="各类违规行为对应的个人罚款金额">
+                            <el-input v-model="audit_form_info.person_punish_list"></el-input>
+                        </el-form-item>
+                        <el-form-item label="各类违规行为对应的中介机构罚款金额">
+                            <el-input v-model="audit_form_info.agency_punish_list"></el-input>
+                        </el-form-item>
+                        <el-form-item label="机构警告">
+                            <el-input v-model="audit_form_info.unit_warn_list"></el-input>
+                        </el-form-item>
+                        <el-form-item label="个人警告">
+                            <el-input v-model="audit_form_info.person_punish_list"></el-input>
+                        </el-form-item>
+                        <el-form-item label="停止新业务">
+                            <el-input v-model="audit_form_info.break_servie"></el-input>
+                        </el-form-item>
+                        <el-form-item label="停止新业务备注">
+                            <el-input v-model="audit_form_info.break_servie_dis"></el-input>
+                        </el-form-item>
+                        <el-form-item label="撤销任职资格">
+                            <el-input v-model="audit_form_info.disqualification"></el-input>
+                        </el-form-item>
+                        <el-form-item label="处罚事由">
+                            <el-input v-model="audit_form_info.punishReason"></el-input>
+                        </el-form-item>
+                        <el-form-item label="处罚内容">
+                            <el-input v-model="audit_form_info.punishContent"></el-input>
+                        </el-form-item>
+                        <el-form-item label="处罚文号">
+                            <el-input v-model="audit_form_info.punishCode"></el-input>
+                        </el-form-item>
+                        <el-form-item label="地区">
+                            <el-input v-model="audit_form_info.punishArea"></el-input>
+                        </el-form-item>
+                        <el-form-item label="处罚信息网址">
+                            <el-input v-model="audit_form_info.punishLink"></el-input>
+                        </el-form-item>
+                    </el-form>
+                </div>
+                <div v-show="activeStep===1">
+                    <el-row :gutter="20">
+                        <el-col :span="3">原文链接</el-col>
+                        <el-col :span="21">{{audit_form_info.originLink}}</el-col>
+                    </el-row>
+                    <el-row :gutter="20" class="mt20">
+                        <el-col :span="3">PDF附件</el-col>
+                        <el-col :span="21">{{audit_form_info.attachment}}</el-col>
+                    </el-row>
+                    <el-table :data="audit_form_info.fixPunishLabelTable" border :header-cell-style="styleH" style="width: 100%;margin-top: 40px;" :span-method="objectSpanMethod">
+                        <el-table-column prop="contrLevel1" label="控制领域一级" width="150"></el-table-column>
+                        <el-table-column prop="contrLevel2" label="控制领域二级" width="150"></el-table-column>
+                        <el-table-column prop="contrLevel3" label="控制领域三级">
+                            <template slot-scope="scope">
+                                <el-checkbox-group v-model="controlAreaData">
+                                    <el-checkbox :label="unit.value" v-for="(unit,k) in scope.row.contrLevel3" :key="k">{{unit.label}}</el-checkbox>
+                                </el-checkbox-group>
+                            </template>
+                        </el-table-column>
+                    </el-table>
+                </div>
+                <div v-show="activeStep===2">
+                    <el-row :gutter="20">
+                        <el-col :span="3">原文链接</el-col>
+                        <el-col :span="21">{{audit_form_info.originLink}}</el-col>
+                    </el-row>
+                    <el-row :gutter="20" class="mt20">
+                        <el-col :span="3">PDF附件</el-col>
+                        <el-col :span="21">{{audit_form_info.attachment}}</el-col>
+                    </el-row>
+                    <el-table :data="audit_form_info.combineTable" border :header-cell-style="styleH" style="width: 100%;margin-top: 40px;" @selection-change="handleSelectionChange">
+                        <el-table-column type="selection" label="选择" width="55"></el-table-column>
+                        <el-table-column prop="punishCode" label="处罚文号" width="120"></el-table-column>
+                        <el-table-column prop="person_name" label="当事人姓名" width="120"></el-table-column>
+                        <el-table-column prop="institution" label="机构名称" width="120"></el-table-column>
+                        <el-table-column prop="punishReason" label="处罚事由"></el-table-column>
+                        <el-table-column prop="originLink" label="原始网址"></el-table-column>
+                        <el-table-column prop="punishSheetList" label="关联文号">
+                            <template slot-scope="scope">
+                                <div v-html="scope.row.punishSheetList.join('<br/>')"></div>
+                                <!-- <p v-for="(item,k) in scope.row.unit_warn_list" :key="k">{{item}}</p> -->
+                            </template>
+                        </el-table-column>
+                    </el-table>
+                </div>
+            </div>
+            <span slot="footer" class="dialog-footer">
+                <el-button @click="changeStep(--activeStep)" v-show="activeStep!==0">上一步</el-button>
+                <el-button type="primary" @click="save">数据暂存</el-button>
+                <el-button @click="changeStep(++activeStep)" v-show="activeStep!==steps.length-1">下一步</el-button>
+                <el-button @click="confirm" type="danger" v-show="activeStep==steps.length-1">确认审核</el-button>
+            </span>
+        </el-dialog>
+    </div>
+</body>
+</html>
+
+<script>
+new Vue({
+    el: '#refApp',
+    data: {
+        form: {
+            status: [],
+            punishedTarget: [],
+            dateRange: ''
+        },
+        tableData: [],
+        pagenation: {
+            page: 1
+        },
+        loading: false,
+
+        dialogVisible: true,
+        activeStep: 0,
+        steps: [
+            {
+                label: '爬虫数据修改',
+                icon: 'el-icon-edit',
+                status: 'finish'
+            }, {
+                label: '修改处罚标签',
+                icon: 'el-icon-office-building',
+                status: 'wait'
+            }, {
+                label: '合并罚单',
+                icon: 'el-icon-coin',
+                status: 'wait'
+            }
+        ],
+        audit_form_info: {
+            name: '',
+            code: '',
+            institution: [],
+            publishDate: '',
+            performDate: '',
+            grade: [],
+            mainUnit: '',
+            unitStatus: '',
+            originLink: '',
+            performUnit: [],
+        },
+        controlAreaData: [],
+
+
+        statusList: [
+            {
+                value: '0',
+                label: '待确认'
+            }, {
+                value: '1',
+                label: '已确认'
+            }
+        ],
+        punishedTargetList: [
+            {
+                value: '0',
+                label: '中介'
+            }, {
+                value: '1',
+                label: '产险'
+            }, {
+                value: '2',
+                label: '农业保险'
+            }, {
+                value: '3',
+                label: '互相保'
+            }, {
+                value: '4',
+                label: '健康险'
+            }, {
+                value: '5',
+                label: '个人'
+            }
+        ],
+        institutionList: [
+            {
+                value: '0',
+                label: '中国银行保险监督管理委员会'
+            }, {
+                value: '1',
+                label: '中国证券监督管理委员会'
+            }, {
+                value: '2',
+                label: '中国人民银行'
+            }, {
+                value: '3',
+                label: '上海国有资产监督管理委员会'
+            }
+        ],
+        gradeList: [
+            {
+                value: '0',
+                label: '规范性文件'
+            }, {
+                value: '1',
+                label: '法律'
+            }, {
+                value: '2',
+                label: '通知及函'
+            }, {
+                value: '3',
+                label: '法规'
+            }, {
+                value: '4',
+                label: '规章'
+            }
+        ],
+        performUnitList: [
+            {
+                value: '0',
+                label: '中国太平洋保险（集团）股份有限公司'
+            }, {
+                value: '1',
+                label: '太平洋资产管理有限责任公司'
+            }, {
+                value: '2',
+                label: '中国太平洋人寿保险股份有限公司'
+            }, {
+                value: '3',
+                label: '安信农业保险股份有限公司'
+            }, {
+                value: '4',
+                label: '中国太平洋财产保险股份有限公司'
+            }, {
+                value: '5',
+                label: '长江养老保险股份有限公司'
+            }, {
+                value: '6',
+                label: '太保安联健康保险股份有限公司'
+            }, {
+                value: '7',
+                label: '太平洋保险养老产业投资管理有限责任公司'
+            }
+        ]
+    },
+    mounted() {
+        this.query()
+    },
+    watch: {
+        activeStep(val) {
+            this.steps = this.steps.map((item,index)=>{
+                if(index<val){
+                    item.status = 'process'
+                }
+                if(index===val){
+                    item.status = 'finish'
+                }
+                if(index>val){
+                    item.status = 'wait'
+                }
+                return item;
+            });
+        }
+    },
+    methods: {
+        query(page) {
+            console.log(9999, page);
+            this.loading = true;
+            setTimeout(()=>{
+                this.loading = false;
+                this.tableData = [
+                    {
+                        punishDate: '2019年5月23日',
+                        institution: "中国银保监会",
+                        person_name: "杨帆，曾卓",
+                        agency_name: "中介机构名称",
+                        punish_sheet_unit: '4',
+                        punish_sheet_person: '5',
+                        punish_sheet_agency: '10',
+                        unit_punish_list: ['信美人寿 40万元', '信美人寿 25万元', '信美人寿 25万元'],
+                        person_punish_list: ['杨帆 5万元', '曾卓  8万元', '杨帆 5万元', '曾卓  8万元'],
+                        agency_punish_list: ['啊啊啊啊 5万元', '点点滴滴  8万元', '发反反复复 5万元', '滚滚滚滚滚  8万元'],
+                        unit_warn_list: ['信美人寿 2', '信美人寿 3', '信美人寿 4'],
+                        person_warn_list: ['杨帆 2', '曾卓  3', '杨帆 4', '曾卓  5'],
+                        agency_warn_list: ['啊啊啊啊 2', '点点滴滴 3', '发反反复复 4', '滚滚滚滚滚  5'],
+                        break_servie: '3',
+                        break_servie_dis: '描述描述描述描述描述描述描述描述描述描述描述描述',
+                        disqualification: '4',
+                        punishReason: ['一，处罚事由处罚事处罚事由处罚事由处罚事由由处罚事由', '二，处罚事处罚事由处罚事由由处罚事由处罚事由', '三，处罚事由处罚事由处罚事由'],
+                        punishContent: ['一，处罚内容处罚内容处罚内容处罚内容处罚内容', '二，处罚内容处罚内容处罚内容', '三，处罚内容处罚内容处罚内容处罚内容处罚内容处罚内容处罚内容处罚内容处罚内容'],
+                        punishCode: "银保监发〔2019〕23号",
+                        punishArea: '北京市',
+                        punishLink: 'http://www.cbrc.gov.cn/chinese/newShouDoc/BB8E3EEC78EA4281ADF4A55325AFE271.html',
+                        punishLabel1: ['控制领域一级', '控制领域一级', '控制领域一级', '控制领域一级'],
+                        punishLabel2: ['控制领域二级', '控制领域二级', '控制领域二级', '控制领域二级'],
+                        punishLabel3: ['处罚标签三级', '处罚标签三级', '处罚标签三级', '处罚标签三级'],
+                        status: '0',
+                        punishSheetList: ['银保监发〔2019〕23号', '银保监发〔2019〕23号', '银保监发〔2019〕23号', '银保监发〔2019〕23号']
+                    }
+                ];
+            }, 500);
+            
+        },
+        onSearch() {
+            this.query();
+            console.log(this.form)
+        },
+        view(row) {
+            console.log(row)
+        },
+        goAudit(row) {
+            this.dialogVisible = true;
+            this.queryAuditInfo();
+        },
+        deleteDate(row) {
+            console.log(row)
+        },
+        changePageSize(size) {
+            console.log(888888, size)
+        },
+        styleH() {
+            return {background: '#fbfbfb', textAlign: 'center', color: '#333'}
+        },
+
+        queryAuditInfo() {
+            this.audit_form_info = {
+                punishDate: '2019年5月23日',
+                institution: "中国银保监会",
+                person_name: "杨帆，曾卓",
+                agency_name: "中介机构名称",
+                punish_sheet_unit: '4',
+                punish_sheet_person: '5',
+                punish_sheet_agency: '10',
+                unit_punish_list: ['信美人寿 40万元', '信美人寿 25万元', '信美人寿 25万元'],
+                person_punish_list: ['杨帆 5万元', '曾卓  8万元', '杨帆 5万元', '曾卓  8万元'],
+                agency_punish_list: ['啊啊啊啊 5万元', '点点滴滴  8万元', '发反反复复 5万元', '滚滚滚滚滚  8万元'],
+                unit_warn_list: ['信美人寿 2', '信美人寿 3', '信美人寿 4'],
+                person_warn_list: ['杨帆 2', '曾卓  3', '杨帆 4', '曾卓  5'],
+                agency_warn_list: ['啊啊啊啊 2', '点点滴滴 3', '发反反复复 4', '滚滚滚滚滚  5'],
+                break_servie: '3',
+                break_servie_dis: '描述描述描述描述描述描述描述描述描述描述描述描述',
+                disqualification: '4',
+                punishReason: ['一，处罚事由处罚事处罚事由处罚事由处罚事由由处罚事由', '二，处罚事处罚事由处罚事由由处罚事由处罚事由', '三，处罚事由处罚事由处罚事由'],
+                punishContent: ['一，处罚内容处罚内容处罚内容处罚内容处罚内容', '二，处罚内容处罚内容处罚内容', '三，处罚内容处罚内容处罚内容处罚内容处罚内容处罚内容处罚内容处罚内容处罚内容'],
+                punishCode: "银保监发〔2019〕23号",
+                punishArea: '北京市',
+                punishLink: 'http://www.cbrc.gov.cn/chinese/newShouDoc/BB8E3EEC78EA4281ADF4A55325AFE271.html',
+                punishLabel1: ['控制领域一级', '控制领域一级', '控制领域一级', '控制领域一级'],
+                punishLabel2: ['控制领域二级', '控制领域二级', '控制领域二级', '控制领域二级'],
+                punishLabel3: ['处罚标签三级', '处罚标签三级', '处罚标签三级', '处罚标签三级'],
+                status: '0',
+                punishSheetList: ['银保监发〔2019〕23号', '银保监发〔2019〕23号', '银保监发〔2019〕23号', '银保监发〔2019〕23号'],
+                //上面tabel没有的key
+                violation: '1、未按照规定使用经批准或者备案的保险条款、保险费率的行为,2、欺骗投保人、被保险人或者受益人的行为',
+                originLink: 'http://www.cbrc.gov.cn/chinese/newShouDoc/BB8E3EEC78EA4281ADF4A55325AFE271.html',
+                attachment: 'BB8E3EEC78EA4281ADF4A55325AFE271.pdf',
+                fixPunishLabelTable: [
+                    {
+                        contrLevel1: '公司治理',
+                        contrLevel2: '关联交易',
+                        contrLevel3: [
+                            {
+                                label: '未按规定进行关联交易披露与报送',
+                                value: 'a1'
+                            }
+                        ]
+                    }, {
+                        contrLevel1: '公司治理',
+                        contrLevel2: '信息披露',
+                        contrLevel3: [
+                            {
+                                label: '未按规定进行对外披露信息',
+                                value: 'b1'
+                            }, {
+                                label: '未按规定进行内幕信息管理',
+                                value: 'b2'
+                            }
+                        ]
+                    }
+                ],
+                combineTable: [
+                    {
+                        id: 0,
+                        punishCode: "银保监发〔2019〕23号",
+                        person_name: "杨帆，曾卓",
+                        institution: "中国银保监会",
+                        punishReason: ['一，处罚事由处罚事处罚事由处罚事由处罚事由由处罚事由', '二，处罚事处罚事由处罚事由由处罚事由处罚事由', '三，处罚事由处罚事由处罚事由'],
+                        originLink: 'http://www.cbrc.gov.cn/chinese/newShouDoc/BB8E3EEC78EA4281ADF4A55325AFE271.html',
+                        punishSheetList: ['银保监发〔2019〕23号', '银保监发〔2019〕23号', '银保监发〔2019〕23号', '银保监发〔2019〕23号']
+                    }, {
+                        id: 0,
+                        punishCode: "银保监发〔2019〕23号",
+                        person_name: "杨帆，曾卓",
+                        institution: "中国银保监会",
+                        punishReason: ['一，处罚事由处罚事处罚事由处罚事由处罚事由由处罚事由', '二，处罚事处罚事由处罚事由由处罚事由处罚事由', '三，处罚事由处罚事由处罚事由'],
+                        originLink: 'http://www.cbrc.gov.cn/chinese/newShouDoc/BB8E3EEC78EA4281ADF4A55325AFE271.html',
+                        punishSheetList: ['银保监发〔2019〕23号', '银保监发〔2019〕23号', '银保监发〔2019〕23号', '银保监发〔2019〕23号']
+                    }, {
+                        id: 1,
+                        punishCode: "银保监发〔2019〕23号",
+                        person_name: "杨帆，曾卓",
+                        institution: "中国银保监会",
+                        punishReason: ['一，处罚事由处罚事处罚事由处罚事由处罚事由由处罚事由', '二，处罚事处罚事由处罚事由由处罚事由处罚事由', '三，处罚事由处罚事由处罚事由'],
+                        originLink: 'http://www.cbrc.gov.cn/chinese/newShouDoc/BB8E3EEC78EA4281ADF4A55325AFE271.html',
+                        punishSheetList: ['银保监发〔2019〕23号', '银保监发〔2019〕23号', '银保监发〔2019〕23号', '银保监发〔2019〕23号']
+                    }, {
+                        id: 2,
+                        punishCode: "银保监发〔2019〕23号",
+                        person_name: "杨帆，曾卓",
+                        institution: "中国银保监会",
+                        punishReason: ['一，处罚事由处罚事处罚事由处罚事由处罚事由由处罚事由', '二，处罚事处罚事由处罚事由由处罚事由处罚事由', '三，处罚事由处罚事由处罚事由'],
+                        originLink: 'http://www.cbrc.gov.cn/chinese/newShouDoc/BB8E3EEC78EA4281ADF4A55325AFE271.html',
+                        punishSheetList: ['银保监发〔2019〕23号', '银保监发〔2019〕23号', '银保监发〔2019〕23号', '银保监发〔2019〕23号']
+                    }, {
+                        id: 3,
+                        punishCode: "银保监发〔2019〕23号",
+                        person_name: "杨帆，曾卓",
+                        institution: "中国银保监会",
+                        punishReason: ['一，处罚事由处罚事处罚事由处罚事由处罚事由由处罚事由', '二，处罚事处罚事由处罚事由由处罚事由处罚事由', '三，处罚事由处罚事由处罚事由'],
+                        originLink: 'http://www.cbrc.gov.cn/chinese/newShouDoc/BB8E3EEC78EA4281ADF4A55325AFE271.html',
+                        punishSheetList: ['银保监发〔2019〕23号', '银保监发〔2019〕23号', '银保监发〔2019〕23号', '银保监发〔2019〕23号']
+                    }, {
+                        id: 4,
+                        punishCode: "银保监发〔2019〕23号",
+                        person_name: "杨帆，曾卓",
+                        institution: "中国银保监会",
+                        punishReason: ['一，处罚事由处罚事处罚事由处罚事由处罚事由由处罚事由', '二，处罚事处罚事由处罚事由由处罚事由处罚事由', '三，处罚事由处罚事由处罚事由'],
+                        originLink: 'http://www.cbrc.gov.cn/chinese/newShouDoc/BB8E3EEC78EA4281ADF4A55325AFE271.html',
+                        punishSheetList: ['银保监发〔2019〕23号', '银保监发〔2019〕23号', '银保监发〔2019〕23号', '银保监发〔2019〕23号']
+                    }, {
+                        id: 5,
+                        punishCode: "银保监发〔2019〕23号",
+                        person_name: "杨帆，曾卓",
+                        institution: "中国银保监会",
+                        punishReason: ['一，处罚事由处罚事处罚事由处罚事由处罚事由由处罚事由', '二，处罚事处罚事由处罚事由由处罚事由处罚事由', '三，处罚事由处罚事由处罚事由'],
+                        originLink: 'http://www.cbrc.gov.cn/chinese/newShouDoc/BB8E3EEC78EA4281ADF4A55325AFE271.html',
+                        punishSheetList: ['银保监发〔2019〕23号', '银保监发〔2019〕23号', '银保监发〔2019〕23号', '银保监发〔2019〕23号']
+                    }
+                ]
+            }
+        },
+        save() {
+            this.audit_form_info.controlAreaData = this.controlAreaData;
+            console.log(this.audit_form_info)
+        },
+        changeStep(step) {
+           this.activeStep = step;
+        },
+        confirm() {
+            this.$confirm('审核通过后将无法修改数据', '提示', {
+                confirmButtonText: '确定',
+                cancelButtonText: '取消',
+                type: 'warning'
+            }).then(() => {
+                this.confirmAudit();
+            });
+        },
+        confirmAudit() {
+            this.dialogVisible = false;
+            this.$message({
+                type: 'success',
+                message: '数据审核通过!'
+            });
+            this.activeStep = 0;
+        },
+        handleSelectionChange(row) {
+            console.log('selected', row)
+        },
+        objectSpanMethod({ row, column, rowIndex, columnIndex }) {
+            if (columnIndex === 0) {
+                if (rowIndex % 2 === 0) {
+                    return {
+                        rowspan: 2,
+                        colspan: 1
+                    };
+                } else {
+                    return {
+                        rowspan: 0,
+                        colspan: 0
+                    };
+                }
+            }
+        }
+    }
+})
+</script>

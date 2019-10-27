@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+
+    <script src="../js/vue.min.js"></script>
+    <!-- 引入样式 -->
+    <link rel="stylesheet" href="../css/element.css">
+    <!-- 引入组件库 -->
+    <script src="../js/element.min.js"></script>
+    <script src="../js/echarts-gl.min.js"></script>
+</head>
+<style>
+    .d_container{
+        padding: 30px;
+    }
+    .mt20{
+        margin-top: 20px;
+    }
+    .d_container .ml20{
+        margin-left: 20px;
+    }
+    .d_tabel_tt{
+        margin: 40px 0 25px;
+        text-align: center;
+    }
+</style>
+<body>
+    <div id="refApp">
+        <div class="d_container">
+            <el-form :inline="true" class="d_search">
+                <el-form-item label="数据状态">
+                    <el-select v-model="target" placeholder="请选择">
+                        <el-option
+                            v-for="item in targetList"
+                            :key="item.value"
+                            :label="item.label"
+                            :value="item.value">
+                        </el-option>
+                    </el-select>
+                </el-form-item>
+                <el-form-item>
+                    <el-button type="primary" @click="onSearch">搜索</el-button>
+                </el-form-item>
+                <el-form-item>
+                    <el-button type="primary" @click="onSearch">报告全量导出</el-button>
+                </el-form-item>
+                <el-form-item>
+                    <el-button type="primary" @click="onSearch">报告上传</el-button>
+                </el-form-item>
+            </el-form>
+            <p>您上传的报告下载：<a :href="attachment" download><i class="el-icon-document"></i> {{attachment}}</a></p>
+
+            <div v-for="(item,k) in charts" :key="k">
+                <div>
+                    {{item.title}}
+                    年月
+                    <el-date-picker
+                        v-model="item.time"
+                        type="month"
+                        @change="change(item)"
+                        placeholder="选择月">
+                    </el-date-picker>
+                </div>
+                <div :id="k" :style="{height:height,width:width}"/>
+            </div>
+        </div>
+        
+    </div>
+</body>
+</html>
+
+<script>
+
+function debounce(func, wait, immediate) {
+  let timeout, args, context, timestamp, result
+
+  const later = function() {
+    // 据上一次触发时间间隔
+    const last = +new Date() - timestamp
+
+    // 上次被包装函数被调用时间间隔 last 小于设定时间间隔 wait
+    if (last < wait && last > 0) {
+      timeout = setTimeout(later, wait - last)
+    } else {
+      timeout = null
+      // 如果设定为immediate===true，因为开始边界已经调用过了此处无需调用
+      if (!immediate) {
+        result = func.apply(context, args)
+        if (!timeout) context = args = null
+      }
+    }
+  }
+
+  return function(...args) {
+    context = this
+    timestamp = +new Date()
+    const callNow = immediate && !timeout
+    // 如果延时不存在，重新设定延时
+    if (!timeout) timeout = setTimeout(later, wait)
+    if (callNow) {
+      result = func.apply(context, args)
+      context = args = null
+    }
+
+    return result
+  }
+}
+
+new Vue({
+    el: '#refApp',
+    data: {
+        target: '',
+        attachment: 'BB8E3EEC78EA4281ADF4A55325AFE271.pdf',
+        targetList: [
+            {
+                label: '集团',
+                value: '0'
+            }, {
+                label: '寿险',
+                value: '1'
+            }, {
+                label: '产险',
+                value: '2'
+            }
+        ],
+        loading: null,
+        chart: null,
+        width: '100%',
+        height: '350px',
+
+        charts: {
+            allPunishCompare: {
+                title: '保险行业整体处罚对比图',
+                time: new Date(),
+                path: 'BB8E3EEC78EA4281ADF4A55325AFE271.pdf',
+                options: {
+                    
+                }
+            }, 
+            lifeInsurance1: {
+                title: '太保寿险同业受处罚金额及件数统计表',
+                time: new Date(),
+                path: 'BB8E3EEC78EA4281ADF4A55325AFE271.pdf',
+                options: {
+                    
+                }
+            }, 
+            lifeInsurance2: {
+                title: '太保寿险同业受处罚金额及件数统计表',
+                time: new Date(),
+                path: 'BB8E3EEC78EA4281ADF4A55325AFE271.pdf',
+                options: {
+                    
+                }
+            }, 
+            lifeInsurance3: {
+                title: '太保寿险同业受处罚金额及件数统计表',
+                time: new Date(),
+                path: 'BB8E3EEC78EA4281ADF4A55325AFE271.pdf',
+                options: {
+                    
+                }
+            }
+        }
+    },
+    mounted() {
+        this.__resizeHandler = debounce(() => {
+            if (this.chart) {
+                this.chart.resize();
+            }
+        }, 100)
+        window.addEventListener('resize', this.__resizeHandler)
+        
+        this.query();
+    },
+    beforeDestroy() {
+        if (!this.chart) return;
+        window.removeEventListener('resize', this.__resizeHandler);
+        this.chart.dispose()
+        this.chart = null
+    },
+    methods: {
+        query() {
+            this.loading = this.$loading({
+                lock: true,
+                text: 'Loading',
+                spinner: 'el-icon-loading',
+                background: 'rgba(0, 0, 0, 0.7)'
+            });
+            setTimeout(() => {
+                this.initChart();
+                this.loading.close();
+            }, 2000);
+        },
+        onSearch() {
+            this.query();
+        },
+        change(item, val) {
+            console.log(item, val)
+        },
+        initChart() {
+            this.chart = echarts.init(document.getElementById('allPunishCompare'));
+            let option = {
+                tooltip: {},
+                legend: {
+                    data: []
+                },
+                toolbox: {
+                    feature: {
+                        saveAsImage: {show: true}
+                    }
+                },
+                xAxis: {
+                        data: ["中国人寿1","中国平安2","中国人保PICC3","新华保险4","泰康保险5","友邦保险6", "阳光保险7", '生命人寿8', "中国人寿","中国平安","中国人保PICC","新华保险","泰康保险","友邦保险", "阳光保险", '生命人寿']
+                    },
+                yAxis: [
+                    {
+                        // name: '金额'
+                    }, 
+                    {
+                        position: 'right',
+                    }
+                ],
+                series: [{
+                    type: 'bar',
+                    yAxisIndex: 0,
+                    data: [504, 458.2, 293, 201.5, 189.1, 168.5, 168, 150, 504, 458.2, 293, 201.5, 189.1, 168.5, 168, 150 ]
+                }, {
+                    type: 'line',
+                    yAxisIndex: 1,
+                    data: [32, 28, 12, 7, 9, 6, 7, 41, 32, 28, 12, 7, 9, 6, 7, 41 ]
+                }]
+            };
+            this.chart.setOption(option);
+        }
+    }
+})
+</script>

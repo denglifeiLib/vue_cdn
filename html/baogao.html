@@ -185,16 +185,17 @@ new Vue({
     },
     methods: {
         query() {
-            this.loading = this.$loading({
-                lock: true,
-                text: 'Loading',
-                spinner: 'el-icon-loading',
-                background: 'rgba(0, 0, 0, 0.7)'
-            });
-            setTimeout(() => {
-                this.initChart();
-                this.loading.close();
-            }, 2000);
+            // this.loading = this.$loading({
+            //     lock: true,
+            //     text: 'Loading',
+            //     spinner: 'el-icon-loading',
+            //     background: 'rgba(0, 0, 0, 0.7)'
+            // });
+            this.initChart();
+            // setTimeout(() => {
+            //     this.initChart();
+            //     this.loading.close();
+            // }, 2000);
         },
         onSearch() {
             this.query();
@@ -206,32 +207,48 @@ new Vue({
             this.chart = echarts.init(document.getElementById('allPunishCompare'));
             let option = {
                 tooltip: {},
-                legend: {
-                    data: []
-                },
                 toolbox: {
                     feature: {
                         saveAsImage: {show: true}
                     }
                 },
                 xAxis: {
-                        data: ["中国人寿1","中国平安2","中国人保PICC3","新华保险4","泰康保险5","友邦保险6", "阳光保险7", '生命人寿8', "中国人寿","中国平安","中国人保PICC","新华保险","泰康保险","友邦保险", "阳光保险", '生命人寿']
+                    axisTick: {
+                        alignWithLabel: true,
                     },
+                    axisLabel: {
+                        interval: 0,
+                        rotate: 90
+                    },
+                    data: ["中国人寿1","中国平安2","中国人保PICC3","新华保险4","泰康保险5","友邦保险6", "阳光保险7", '生命人寿8', "中国人寿","中国平安","中国人保PICC","新华保险","泰康保险","友邦保险", "阳光保险", '生命人寿']
+                },
                 yAxis: [
                     {
                         // name: '金额'
+                        splitLine: {
+                            show: false
+                        }
                     }, 
                     {
                         position: 'right',
+                        splitLine: {
+                            show: false
+                        }
                     }
                 ],
                 series: [{
                     type: 'bar',
                     yAxisIndex: 0,
+                    barMaxWidth: '30%',
                     data: [504, 458.2, 293, 201.5, 189.1, 168.5, 168, 150, 504, 458.2, 293, 201.5, 189.1, 168.5, 168, 150 ]
                 }, {
                     type: 'line',
+                    symbol: 'none',
                     yAxisIndex: 1,
+                    lineStyle: {
+                        color: '#ed7d31',
+                        width: 3,
+                    },
                     data: [32, 28, 12, 7, 9, 6, 7, 41, 32, 28, 12, 7, 9, 6, 7, 41 ]
                 }]
             };

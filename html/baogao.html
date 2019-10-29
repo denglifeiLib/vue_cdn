@@ -65,7 +65,7 @@
                         placeholder="选择月">
                     </el-date-picker>
                 </div>
-                <div :id="k" :style="{height:height,width:width}"/>
+                <div :id="item.options.id" :style="{height:height,width:width,paddingBottom: '40px'}"/>
             </div>
         </div>
         
@@ -132,45 +132,15 @@ new Vue({
         width: '100%',
         height: '350px',
 
-        charts: {
-            allPunishCompare: {
-                title: '保险行业整体处罚对比图',
-                time: new Date(),
-                path: 'BB8E3EEC78EA4281ADF4A55325AFE271.pdf',
-                options: {
-                    
-                }
-            }, 
-            lifeInsurance1: {
-                title: '太保寿险同业受处罚金额及件数统计表',
-                time: new Date(),
-                path: 'BB8E3EEC78EA4281ADF4A55325AFE271.pdf',
-                options: {
-                    
-                }
-            }, 
-            lifeInsurance2: {
-                title: '太保寿险同业受处罚金额及件数统计表',
-                time: new Date(),
-                path: 'BB8E3EEC78EA4281ADF4A55325AFE271.pdf',
-                options: {
-                    
-                }
-            }, 
-            lifeInsurance3: {
-                title: '太保寿险同业受处罚金额及件数统计表',
-                time: new Date(),
-                path: 'BB8E3EEC78EA4281ADF4A55325AFE271.pdf',
-                options: {
-                    
-                }
-            }
-        }
+        charts: {},
+        chartsId: []
     },
     mounted() {
         this.__resizeHandler = debounce(() => {
-            if (this.chart) {
-                this.chart.resize();
+            if (this.chartsId.length>0) {
+                this.chartsId.forEach(chart => {
+                    this[chart].resize();
+                });
             }
         }, 100)
         window.addEventListener('resize', this.__resizeHandler)
@@ -178,24 +148,144 @@ new Vue({
         this.query();
     },
     beforeDestroy() {
-        if (!this.chart) return;
+        if (this.chartsId.length===0) return;
         window.removeEventListener('resize', this.__resizeHandler);
-        this.chart.dispose()
-        this.chart = null
+        this.chartsId.forEach(chart => {
+            this[chart].dispose();
+            this[chart] = null;
+        });
     },
     methods: {
         query() {
-            // this.loading = this.$loading({
-            //     lock: true,
-            //     text: 'Loading',
-            //     spinner: 'el-icon-loading',
-            //     background: 'rgba(0, 0, 0, 0.7)'
-            // });
-            this.initChart();
-            // setTimeout(() => {
-            //     this.initChart();
-            //     this.loading.close();
-            // }, 2000);
+            this.loading = this.$loading({
+                lock: true,
+                text: 'Loading',
+                spinner: 'el-icon-loading',
+                background: 'rgba(0, 0, 0, 0.7)'
+            });
+            // this.initChart();
+            setTimeout(() => {
+                this.charts = {
+                    allPunishCompare: {
+                        title: '保险行业整体处罚对比图',
+                        time: new Date(),
+                        path: 'BB8E3EEC78EA4281ADF4A55325AFE271.pdf',
+                        options: {
+                            type: 'type1',
+                            id: 'type1_1',
+                            category: ["中国人寿1","中国平安2","中国人保PICC3","新华保险4","泰康保险5","友邦保险6", "阳光保险7", '生命人寿8', "中国人寿","中国平安","中国人保PICC","新华保险","泰康保险","友邦保险", "阳光保险", '生命人寿'],
+                            bardata: [504, 458.2, 293, 201.5, 189.1, 168.5, 168, 150, 504, 458.2, 293, 201.5, 189.1, 168.5, 168, 150 ],
+                            linedata: [32, 28, 12, 7, 9, 6, 7, 41, 32, 28, 12, 7, 9, 6, 7, 41 ]
+                        }
+                    }, 
+                    lifeInsurance1: {
+                        title: '太保寿险同业受处罚金额及件数统计表',
+                        time: new Date(),
+                        path: 'BB8E3EEC78EA4281ADF4A55325AFE271.pdf',
+                        options: {
+                            type: 'type1',
+                            id: 'type1_2',
+                            category: ["中国人寿1","中国平安2","中国人保PICC3","新华保险4","泰康保险5","友邦保险6", "阳光保险7", '生命人寿8', "中国人寿","中国平安","中国人保PICC","新华保险","泰康保险","友邦保险", "阳光保险", '生命人寿'],
+                            bardata: [504, 458.2, 293, 201.5, 189.1, 168.5, 168, 150, 504, 458.2, 293, 201.5, 189.1, 168.5, 168, 150 ],
+                            linedata: [32, 28, 12, 7, 9, 6, 7, 41, 32, 28, 12, 7, 9, 6, 7, 41 ]
+                        }
+                    }, 
+                    lifeInsurance2: {
+                        title: '太保寿险同业受处罚金额及件数统计表',
+                        time: new Date(),
+                        path: 'BB8E3EEC78EA4281ADF4A55325AFE271.pdf',
+                        options: {
+                            type: 'type1',
+                            id: 'type1_3',
+                            category: ["中国人寿1","中国平安2","中国人保PICC3","新华保险4","泰康保险5","友邦保险6", "阳光保险7", '生命人寿8', "中国人寿","中国平安","中国人保PICC","新华保险","泰康保险","友邦保险", "阳光保险", '生命人寿'],
+                            bardata: [504, 458.2, 293, 201.5, 189.1, 168.5, 168, 150, 504, 458.2, 293, 201.5, 189.1, 168.5, 168, 150 ],
+                            linedata: [32, 28, 12, 7, 9, 6, 7, 41, 32, 28, 12, 7, 9, 6, 7, 41 ]
+                        }
+                    }, 
+                    lifeInsurance3: {
+                        title: '太保产险同业处罚罚单总数及总金额比较',
+                        time: new Date(),
+                        path: 'BB8E3EEC78EA4281ADF4A55325AFE271.pdf',
+                        options: {
+                            type: 'type2',
+                            id: 'type2_1',
+                            category: ["行业","人保","平安","太包"],
+                            bardata: [351, 88, 44, 41 ],
+                            linedata: [12804, 3113, 1832, 1618 ]
+                        }
+                    },
+                    lifeInsurance4: {
+                        title: '太保产险同业处罚罚单总数及总金额比较',
+                        time: new Date(),
+                        path: 'BB8E3EEC78EA4281ADF4A55325AFE271.pdf',
+                        options: {
+                            type: 'type2',
+                            id: 'type2_2',
+                            category: ["行业","人保","平安","太包"],
+                            bardata: [351, 88, 44, 41 ],
+                            linedata: [12804, 3113, 1832, 1618 ]
+                        }
+                    },
+                    lifeInsurance5: {
+                        title: '太保产险同业处罚罚单总数及总金额比较',
+                        time: new Date(),
+                        path: 'BB8E3EEC78EA4281ADF4A55325AFE271.pdf',
+                        options: {
+                            type: 'type3',
+                            id: 'type3_1',
+                            category: ["行业","人保","平安","太包"],
+                            bardata: [29, 5, 6, 4 ]
+                        }
+                    },
+                    lifeInsurance6: {
+                        title: '太保产险同业重大处罚次数比较',
+                        time: new Date(),
+                        path: 'BB8E3EEC78EA4281ADF4A55325AFE271.pdf',
+                        options: {
+                            type: 'type3',
+                            id: 'type3_2',
+                            category: ["行业","人保","平安","太包"],
+                            bardata: [29, 5, 6, 4 ]
+                        }
+                    },
+                    lifeInsurance7: {
+                        title: '太保产险同业处罚罚单总数及总金额比较',
+                        time: new Date(),
+                        path: 'BB8E3EEC78EA4281ADF4A55325AFE271.pdf',
+                        options: {
+                            type: 'type4',
+                            id: 'type4_1',
+                            category: ["虚列业务及管理费用","财务业务资料不真实","欺骗投保人/销售误导","规向被保险人返还利益", "未严格执行条款费率", "任职资格违规"],
+                            bardata: [126, 198, 455, 1251, 1314, 1490 ],
+                            linedata: [30, 66, 50, 101, 54, 66 ]
+                        }
+                    },
+                }
+                
+                this.$nextTick(()=> {
+                    for (let key in this.charts) {
+                        let item = this.charts[key].options;
+                        this.chartsId.push(item.id)
+                        switch (item.type) {
+                            case 'type1': 
+                                this.type1({id: item.id, category: item.category, bardata: item.bardata, linedata: item.linedata});
+                                break;
+                            case 'type2': 
+                                this.type2({id: item.id, category: item.category, bardata: item.bardata, linedata: item.linedata});
+                                break;
+                            case 'type3': 
+                                this.type3({id: item.id, category: item.category, bardata: item.bardata});
+                                break;
+                            case 'type4': 
+                                this.type4({id: item.id, category: item.category, bardata: item.bardata, linedata: item.linedata});
+                                break;
+                            default : 
+                                break;
+                        }
+                    }
+                    this.loading.close();
+                })
+            }, 500);
         },
         onSearch() {
             this.query();
@@ -203,14 +293,31 @@ new Vue({
         change(item, val) {
             console.log(item, val)
         },
-        initChart() {
-            this.chart = echarts.init(document.getElementById('allPunishCompare'));
+        type1({id, category, bardata, linedata}) {
+            this[id] = echarts.init(document.getElementById(id));
             let option = {
                 tooltip: {},
                 toolbox: {
+                    right: '10%',
                     feature: {
-                        saveAsImage: {show: true}
+                        saveAsImage: {
+                            show: true,
+                            title: '保存为图片' 
+                        }
                     }
+                },
+                legend: {
+                    bottom: '-10px',
+                    data: [{
+                        name: '处罚金额（万元）',
+                        icon: 'rect',
+                        backgroundColor: 'red'
+                    }, {
+                        name: '罚单数量（份）',
+                        icon: 'rect',
+                        backgroundColor: 'red'
+                    }],
+                    align: 'left'
                 },
                 xAxis: {
                     axisTick: {
@@ -218,13 +325,12 @@ new Vue({
                     },
                     axisLabel: {
                         interval: 0,
-                        rotate: 90
+                        rotate: 30
                     },
-                    data: ["中国人寿1","中国平安2","中国人保PICC3","新华保险4","泰康保险5","友邦保险6", "阳光保险7", '生命人寿8', "中国人寿","中国平安","中国人保PICC","新华保险","泰康保险","友邦保险", "阳光保险", '生命人寿']
+                    data: category
                 },
                 yAxis: [
                     {
-                        // name: '金额'
                         splitLine: {
                             show: false
                         }
@@ -237,23 +343,256 @@ new Vue({
                     }
                 ],
                 series: [{
+                    color: '#5b9bd5',
+                    name: '处罚金额（万元）',
                     type: 'bar',
                     yAxisIndex: 0,
                     barMaxWidth: '30%',
-                    data: [504, 458.2, 293, 201.5, 189.1, 168.5, 168, 150, 504, 458.2, 293, 201.5, 189.1, 168.5, 168, 150 ]
+                    label: {
+                        show: true,
+                        position: 'top',
+                        color: '#000',
+                        fontWeight: 'bold'
+                    },
+                    data: bardata
                 }, {
+                    color: '#ed7d31',
+                    name: '罚单数量（份）',
                     type: 'line',
-                    symbol: 'none',
+                    // symbol: 'none',
                     yAxisIndex: 1,
                     lineStyle: {
                         color: '#ed7d31',
                         width: 3,
                     },
-                    data: [32, 28, 12, 7, 9, 6, 7, 41, 32, 28, 12, 7, 9, 6, 7, 41 ]
+                    label: {
+                        show: true,
+                        position: 'bottom',
+                        color: 'red',
+                        fontWeight: 'bold'
+                    },
+                    data: linedata
                 }]
             };
-            this.chart.setOption(option);
-        }
+            this[id].setOption(option);
+        },
+        type2({id, category, bardata, linedata}) {
+            this[id] = echarts.init(document.getElementById(id));
+            let option = {
+                tooltip: {},
+                toolbox: {
+                    right: '10%',
+                    feature: {
+                        saveAsImage: {
+                            show: true,
+                            title: '保存为图片' 
+                        }
+                    }
+                },
+                legend: {
+                    bottom: '-10px',
+                    data: [{
+                        name: '处罚金额（万元）',
+                        icon: 'rect',
+                        backgroundColor: 'red'
+                    }, {
+                        name: '罚单数量（份）',
+                        icon: 'rect',
+                        backgroundColor: 'red'
+                    }],
+                    align: 'left'
+                },
+                xAxis: {
+                    axisTick: {
+                        alignWithLabel: true,
+                    },
+                    axisLabel: {
+                        interval: 0
+                    },
+                    data: category
+                },
+                yAxis: [
+                    {
+                        axisLine: {
+                            show: false
+                        },
+                        splitLine: {
+                            show: true
+                        }
+                    }, 
+                    {
+                        axisLine: {
+                            show: false
+                        },
+                        position: 'right',
+                        splitLine: {
+                            show: true,
+                            lineStyle: {
+                                type: 'dotted'
+                            }
+                        }
+                    }
+                ],
+                series: [{
+                    color: '#5b9bd5',
+                    name: '处罚金额（万元）',
+                    type: 'bar',
+                    yAxisIndex: 0,
+                    barMaxWidth: '10%',
+                    label: {
+                        show: true,
+                        position: 'top',
+                        color: '#000',
+                        fontWeight: 'bold'
+                    },
+                    data: bardata
+                }, {
+                    color: '#ed7d31',
+                    name: '罚单数量（份）',
+                    type: 'line',
+                    // symbol: 'none',
+                    yAxisIndex: 1,
+                    lineStyle: {
+                        color: '#ed7d31',
+                        width: 3,
+                    },
+                    label: {
+                        show: true,
+                        position: 'bottom',
+                        color: 'red',
+                        fontWeight: 'bold'
+                    },
+                    data: linedata
+                }]
+            };
+            this[id].setOption(option);
+        },
+        type3({id, category, bardata}) {
+            this[id] = echarts.init(document.getElementById(id));
+            let option = {
+                tooltip: {},
+                toolbox: {
+                    right: '10%',
+                    feature: {
+                        saveAsImage: {
+                            show: true,
+                            title: '保存为图片' 
+                        }
+                    }
+                },
+                legend: {},
+                xAxis: {
+                    axisTick: {
+                        alignWithLabel: true,
+                    },
+                    axisLabel: {
+                        interval: 0
+                    },
+                    data: category
+                },
+                yAxis: [
+                    {
+                        show: false
+                    }
+                ],
+                series: [{
+                    color: '#5b9bd5',
+                    name: '处罚金额（万元）',
+                    type: 'bar',
+                    yAxisIndex: 0,
+                    barMaxWidth: '10%',
+                    label: {
+                        show: true,
+                        position: 'top',
+                        color: '#000',
+                        fontWeight: 'bold'
+                    },
+                    data: bardata
+                }]
+            };
+            this[id].setOption(option);
+        },
+        type4({id, category, bardata, linedata}) {
+            this[id] = echarts.init(document.getElementById(id));
+            let option = {
+                tooltip: {},
+                toolbox: {
+                    right: '10%',
+                    feature: {
+                        saveAsImage: {
+                            show: true,
+                            title: '保存为图片' 
+                        }
+                    }
+                },
+                legend: {
+                    bottom: '-10px',
+                    data: [{
+                        name: '处罚金额（万元）',
+                        icon: 'rect',
+                        backgroundColor: 'red'
+                    }, {
+                        name: '罚单数量（份）',
+                        icon: 'rect',
+                        backgroundColor: 'red'
+                    }],
+                    align: 'left'
+                },
+                xAxis: [
+                    {
+                        type: 'value',
+                        axisLine: {
+                            show: false
+                        },
+                        splitLine: {
+                            show: false
+                        },
+                        axisTick: {
+                            show: false
+                        }
+                    }
+                ],
+                yAxis: {
+                    type: 'category',
+                    axisTick: {
+                        alignWithLabel: true,
+                    },
+                    axisLabel: {
+                        interval: 0
+                    },
+                    data: category
+                },
+                series: [{
+                    color: '#ed7d31',
+                    name: '罚单数量（份）',
+                    type: 'bar',
+                    xAxisIndex: 0,
+                    barMaxWidth: '18px',
+                    barGap: '0',
+                    label: {
+                        show: true,
+                        position: 'right',
+                        color: 'red',
+                        fontWeight: 'bold'
+                    },
+                    data: linedata
+                }, {
+                    color: '#5b9bd5',
+                    name: '处罚金额（万元）',
+                    type: 'bar',
+                    xAxisIndex: 0,
+                    barMaxWidth: '18px',
+                    label: {
+                        show: true,
+                        position: 'right',
+                        color: '#000',
+                        fontWeight: 'bold'
+                    },
+                    data: bardata
+                }]
+            };
+            this[id].setOption(option);
+        },
     }
 })
 </script>

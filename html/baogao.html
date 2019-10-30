@@ -331,14 +331,20 @@ new Vue({
                 },
                 yAxis: [
                     {
+                        min: 0,
+                        max: 600,
+                        interval: 100,
                         splitLine: {
-                            show: false
+                            show: true
                         }
                     }, 
                     {
+                        min: 0,
+                        max: 60,
+                        interval: 10,
                         position: 'right',
                         splitLine: {
-                            show: false
+                            show: true
                         }
                     }
                 ],
@@ -413,6 +419,9 @@ new Vue({
                 },
                 yAxis: [
                     {
+                        min: 0,
+                        max: 400,
+                        interval: 80,
                         axisLine: {
                             show: false
                         },
@@ -421,15 +430,15 @@ new Vue({
                         }
                     }, 
                     {
+                        min: 0,
+                        max: 15000,
+                        interval: 3000,
                         axisLine: {
                             show: false
                         },
                         position: 'right',
                         splitLine: {
-                            show: true,
-                            lineStyle: {
-                                type: 'dotted'
-                            }
+                            show: true
                         }
                     }
                 ],

@@ -12,6 +12,7 @@
     <!-- 引入组件库 -->
     <script src="../js/element.min.js"></script>
     <script src="../js/echarts-gl.min.js"></script>
+    <script src="../js/china.js"></script>
 </head>
 <style>
     .d_container{
@@ -31,7 +32,7 @@
 <body>
     <div id="refApp">
         <div class="d_container">
-            <el-form :inline="true" class="d_search">
+            <el-form :inline="true" class="d_search" size="mini">
                 <el-form-item label="数据状态">
                     <el-select v-model="target" placeholder="请选择">
                         <el-option
@@ -57,10 +58,12 @@
             <div v-for="(item,k) in charts" :key="k">
                 <div>
                     {{item.title}}
+                    <el-button @click="showDialog(item)" size="mini" v-if="item.options.type==='type5'"  type="primary"  style="margin:0 8px;">修改阀值</el-button>
                     年月
                     <el-date-picker
                         v-model="item.time"
                         type="month"
+                        size="mini"
                         @change="change(item)"
                         placeholder="选择月">
                     </el-date-picker>
@@ -68,7 +71,102 @@
                 <div :id="item.options.id" :style="{height:height,width:width,paddingBottom: '40px'}"/>
             </div>
         </div>
-        
+        <el-dialog title="修改地图阀值" :center="true" :visible="showFixRange" class="d_dialog" @close="showFixRange=false" size="mini">
+            <p>红色阀值 罚单金额（万）</p>
+            <el-form :inline="true" size="mini">
+                <el-form-item style="width: 120px;">
+                    <el-select v-model="rangeForm.red.min" placeholder="选择比较符号">
+                        <el-option
+                            v-for="item in rangetypeList"
+                            :key="item.value"
+                            :label="item.label"
+                            :value="item.value">
+                        </el-option>
+                    </el-select>
+                </el-form-item>
+                <el-form-item style="width: 120px;">
+                    <el-input v-model="rangeForm.red.min_number" placeholder="请输入" type="number"></el-input>
+                </el-form-item>
+                <el-form-item style="width: 120px;">
+                    <el-select v-model="rangeForm.red.max" placeholder="选择比较符号">
+                        <el-option
+                            v-for="item in rangetypeList"
+                            :key="item.value"
+                            :label="item.label"
+                            :value="item.value">
+                        </el-option>
+                    </el-select>
+                </el-form-item>
+                <el-form-item style="width: 120px;">
+                    <el-input v-model="rangeForm.red.max_number" placeholder="请输入" type="number"></el-input>
+                </el-form-item>
+            </el-form>
+
+            <p>黄色阀值 罚单金额（万）</p>
+            <el-form :inline="true" size="mini">
+                <el-form-item style="width: 120px;">
+                    <el-select v-model="rangeForm.yellow.min" placeholder="选择比较符号">
+                        <el-option
+                            v-for="item in rangetypeList"
+                            :key="item.value"
+                            :label="item.label"
+                            :value="item.value">
+                        </el-option>
+                    </el-select>
+                </el-form-item>
+                <el-form-item style="width: 120px;">
+                    <el-input v-model="rangeForm.yellow.min_number" placeholder="请输入" type="number"></el-input>
+                </el-form-item>
+                <el-form-item style="width: 120px;">
+                    <el-select v-model="rangeForm.yellow.max" placeholder="选择比较符号">
+                        <el-option
+                            v-for="item in rangetypeList"
+                            :key="item.value"
+                            :label="item.label"
+                            :value="item.value">
+                        </el-option>
+                    </el-select>
+                </el-form-item>
+                <el-form-item style="width: 120px;">
+                    <el-input v-model="rangeForm.yellow.max_number" placeholder="请输入" type="number"></el-input>
+                </el-form-item>
+            </el-form>
+
+            <p>蓝色阀值 罚单金额（万）</p>
+            <el-form :inline="true" size="mini">
+                <el-form-item style="width: 120px;">
+                    <el-select v-model="rangeForm.blue.min" placeholder="选择比较符号">
+                        <el-option
+                            v-for="item in rangetypeList"
+                            :key="item.value"
+                            :label="item.label"
+                            :value="item.value">
+                        </el-option>
+                    </el-select>
+                </el-form-item>
+                <el-form-item style="width: 120px;">
+                    <el-input v-model="rangeForm.blue.min_number" placeholder="请输入" type="number"></el-input>
+                </el-form-item>
+                <el-form-item style="width: 120px;">
+                    <el-select v-model="rangeForm.blue.max" placeholder="选择比较符号">
+                        <el-option
+                            v-for="item in rangetypeList"
+                            :key="item.value"
+                            :label="item.label"
+                            :value="item.value">
+                        </el-option>
+                    </el-select>
+                </el-form-item>
+                <el-form-item style="width: 120px;">
+                    <el-input v-model="rangeForm.blue.max_number" placeholder="请输入" type="number"></el-input>
+                </el-form-item>
+            </el-form>
+
+            <span slot="footer" class="dialog-footer">
+                <el-button @click="showFixRange=false" size="mini">返回</el-button>
+                <el-button type="primary" @click="changeRange" size="mini">数据暂存</el-button>
+            </span>
+        </el-dialog>
     </div>
 </body>
 </html>
@@ -76,39 +174,43 @@
 <script>
 
 function debounce(func, wait, immediate) {
-  let timeout, args, context, timestamp, result
+    let timeout, args, context, timestamp, result
 
-  const later = function() {
+    const later = function() {
     // 据上一次触发时间间隔
     const last = +new Date() - timestamp
 
     // 上次被包装函数被调用时间间隔 last 小于设定时间间隔 wait
     if (last < wait && last > 0) {
-      timeout = setTimeout(later, wait - last)
+        timeout = setTimeout(later, wait - last)
     } else {
-      timeout = null
-      // 如果设定为immediate===true，因为开始边界已经调用过了此处无需调用
-      if (!immediate) {
+        timeout = null
+        // 如果设定为immediate===true，因为开始边界已经调用过了此处无需调用
+        if (!immediate) {
         result = func.apply(context, args)
         if (!timeout) context = args = null
-      }
+        }
     }
-  }
+    }
 
-  return function(...args) {
+    return function(...args) {
     context = this
     timestamp = +new Date()
     const callNow = immediate && !timeout
     // 如果延时不存在，重新设定延时
     if (!timeout) timeout = setTimeout(later, wait)
     if (callNow) {
-      result = func.apply(context, args)
-      context = args = null
+        result = func.apply(context, args)
+        context = args = null
     }
 
     return result
-  }
+    }
 }
+
+function randomData() {  
+    return Math.round(Math.random()*500);  
+} 
 
 new Vue({
     el: '#refApp',
@@ -130,7 +232,44 @@ new Vue({
         loading: null,
         chart: null,
         width: '100%',
-        height: '350px',
+        height: '700px',
+        showFixRange: false,
+        //lt（小于，little than），gt（大于，greater than），lte（小于等于 lettle than or equals），gte（大于等于，greater than or equals）
+        rangeForm: {
+            red: {
+                min: '',
+                max: '',
+                min_number: '',
+                max_number: '',
+            }, 
+            yellow: {
+                min: '',
+                max: '',
+                min_number: '',
+                max_number: '',
+            }, 
+            blue: {
+                min: '',
+                max: '',
+                min_number: '',
+                max_number: '',
+            }
+        },
+        rangetypeList: [
+            {
+                value: 'lt',
+                label: '<'
+            }, {
+                value: 'lte',
+                label: '≤'
+            }, {
+                value: 'gt',
+                label: '>'
+            }, {
+                value: 'gte',
+                label: '≥'
+            }
+        ],
 
         charts: {},
         chartsId: []
@@ -260,12 +399,70 @@ new Vue({
                             linedata: [30, 66, 50, 101, 54, 66 ]
                         }
                     },
+                    lifeInsurance8: {
+                        title: '太保寿险同业处罚金额热力分布图',
+                        time: new Date(),
+                        path: 'BB8E3EEC78EA4281ADF4A55325AFE271.pdf',
+                        options: {
+                            type: 'type5',
+                            id: 'type5_1',
+                            category: ["虚列业务及管理费用","财务业务资料不真实","欺骗投保人/销售误导","规向被保险人返还利益", "未严格执行条款费率", "任职资格违规"],
+                            data: [  
+                                {name: '北京',value: '100' },{name: '天津',value: randomData() },  
+                                {name: '上海',value: randomData() },{name: '重庆',value: randomData() },  
+                                {name: '河北',value: randomData() },{name: '河南',value: randomData() },  
+                                {name: '云南',value: randomData() },{name: '辽宁',value: randomData() },  
+                                {name: '黑龙江',value: randomData() },{name: '湖南',value: randomData() },  
+                                {name: '安徽',value: randomData() },{name: '山东',value: randomData() },  
+                                {name: '新疆',value: randomData() },{name: '江苏',value: randomData() },  
+                                {name: '浙江',value: randomData() },{name: '江西',value: randomData() },  
+                                {name: '湖北',value: randomData() },{name: '广西',value: randomData() },  
+                                {name: '甘肃',value: randomData() },{name: '山西',value: randomData() },  
+                                {name: '内蒙古',value: randomData() },{name: '陕西',value: randomData() },  
+                                {name: '吉林',value: randomData() },{name: '福建',value: randomData() },  
+                                {name: '贵州',value: randomData() },{name: '广东',value: randomData() },  
+                                {name: '青海',value: randomData() },{name: '西藏',value: randomData() },  
+                                {name: '四川',value: randomData() },{name: '宁夏',value: randomData() },  
+                                {name: '海南',value: randomData() },{name: '台湾',value: randomData() },  
+                                {name: '香港',value: randomData() },{name: '澳门',value: randomData() }  
+                            ]
+                        }
+                    },
+                    lifeInsurance9: {
+                        title: '太保寿险同业处罚金额热力分布图',
+                        time: new Date(),
+                        path: 'BB8E3EEC78EA4281ADF4A55325AFE271.pdf',
+                        options: {
+                            type: 'type5',
+                            id: 'type5_2',
+                            category: ["虚列业务及管理费用","财务业务资料不真实","欺骗投保人/销售误导","规向被保险人返还利益", "未严格执行条款费率", "任职资格违规"],
+                            data: [  
+                                {name: '北京',value: '100' },{name: '天津',value: randomData() },  
+                                {name: '上海',value: randomData() },{name: '重庆',value: randomData() },  
+                                {name: '河北',value: randomData() },{name: '河南',value: randomData() },  
+                                {name: '云南',value: randomData() },{name: '辽宁',value: randomData() },  
+                                {name: '黑龙江',value: randomData() },{name: '湖南',value: randomData() },  
+                                {name: '安徽',value: randomData() },{name: '山东',value: randomData() },  
+                                {name: '新疆',value: randomData() },{name: '江苏',value: randomData() },  
+                                {name: '浙江',value: randomData() },{name: '江西',value: randomData() },  
+                                {name: '湖北',value: randomData() },{name: '广西',value: randomData() },  
+                                {name: '甘肃',value: randomData() },{name: '山西',value: randomData() },  
+                                {name: '内蒙古',value: randomData() },{name: '陕西',value: randomData() },  
+                                {name: '吉林',value: randomData() },{name: '福建',value: randomData() },  
+                                {name: '贵州',value: randomData() },{name: '广东',value: randomData() },  
+                                {name: '青海',value: randomData() },{name: '西藏',value: randomData() },  
+                                {name: '四川',value: randomData() },{name: '宁夏',value: randomData() },  
+                                {name: '海南',value: randomData() },{name: '台湾',value: randomData() },  
+                                {name: '香港',value: randomData() },{name: '澳门',value: randomData() }  
+                            ]
+                        }
+                    },
                 }
                 
                 this.$nextTick(()=> {
                     for (let key in this.charts) {
                         let item = this.charts[key].options;
-                        this.chartsId.push(item.id)
+                        item.id && this.chartsId.push(item.id);
                         switch (item.type) {
                             case 'type1': 
                                 this.type1({id: item.id, category: item.category, bardata: item.bardata, linedata: item.linedata});
@@ -278,6 +475,9 @@ new Vue({
                                 break;
                             case 'type4': 
                                 this.type4({id: item.id, category: item.category, bardata: item.bardata, linedata: item.linedata});
+                                break;
+                            case 'type5': 
+                                this.type5({id: item.id, data: item.data});
                                 break;
                             default : 
                                 break;
@@ -292,6 +492,12 @@ new Vue({
         },
         change(item, val) {
             console.log(item, val)
+        },
+        showDialog() {
+            this.showFixRange = true;
+        },
+        changeRange(data) {
+            this.query();
         },
         type1({id, category, bardata, linedata}) {
             this[id] = echarts.init(document.getElementById(id));
@@ -599,6 +805,81 @@ new Vue({
                     },
                     data: bardata
                 }]
+            };
+            this[id].setOption(option);
+        },
+        type5({id, data}) {
+            this[id] = echarts.init(document.getElementById(id));
+            let categorys = {
+                '0': [],
+                '100': [],
+                '200': []
+            }
+            data.forEach(item=> {
+                if(item.value>=0 && item.value<=100 ){
+                    categorys['0'].push(item.name);
+                    return;
+                }
+                if(item.value>100 && item.value<=200 ){
+                    categorys['100'].push(item.name);
+                    return;
+                }
+                if(item.value>200 ){
+                    categorys['200'].push(item.name);
+                    return;
+                }
+            })
+            let option = {  
+                backgroundColor: '#FFFFFF',  
+                tooltip : {  
+                    trigger: 'item'  
+                },  
+                visualMap: {  
+                    show : true,  
+                    x: 'right',  
+                    y: 'center',  
+                    align: 'left',
+                    pieces: [   
+                        {gt: 200},
+                        {gt: 100, lte: 200},
+                        {gt: 0, lte: 100} 
+                    ],
+                    textStyle: {
+                        width: 100
+                    },
+                    formatter: function (value, value2) {
+                        let text = '';
+                        if(value === 0) {
+                            // text = categorys['0'].join(',')
+                            text = '罚款金额≤100'
+                        } else if(value === 100) {
+                            // text = categorys['100'].join(',')
+                            text = '罚款金额≤200 或 text = 罚款金>100'
+                        } else {
+                            // text = categorys['200'].join(',')
+                            text = '罚款金额>200'
+                        }
+                        return text;
+                    },
+                    color: ['#F80000', '#F9C000', '#01B0F4']
+                },  
+                
+                //配置属性
+                series: [{  
+                    name: '数据',  
+                    type: 'map',  
+                    mapType: 'china',   
+                    roam: false,  
+                    label: {  
+                        normal: {  
+                            show: true  //省份名称  
+                        },  
+                        emphasis: {  
+                            show: false  
+                        }  
+                    },  
+                    data: data  //数据
+                }]  
             };
             this[id].setOption(option);
         },

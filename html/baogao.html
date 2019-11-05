@@ -534,7 +534,7 @@ new Vue({
                 this.$nextTick(()=> {
                     for (let key in this.charts) {
                         let item = this.charts[key].options;
-                        item.id && this.chartsId.push(item.id);
+                        item.type !== 'table' && item.id && this.chartsId.push(item.id);
                         switch (item.type) {
                             case 'type1': 
                                 this.type1(this.charts[key]);

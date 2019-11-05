@@ -16,16 +16,16 @@
 </head>
 <style>
     .d_container{
-        padding: 30px;
+        padding: 15px;
     }
     .mt20{
-        margin-top: 20px;
+        margin-top: 10px;
     }
     .d_container .ml20{
-        margin-left: 20px;
+        margin-left: 10px;
     }
     .d_tabel_tt{
-        margin: 40px 0 25px;
+        margin: 20px 0 15px;
         text-align: center;
     }
 </style>
@@ -61,14 +61,26 @@
                     <el-button @click="showDialog(item)" size="mini" v-if="item.options.type==='type5'"  type="primary"  style="margin:0 8px;">修改阀值</el-button>
                     年月
                     <el-date-picker
+                        :ref="`picker${k}`"
                         v-model="item.time"
                         type="month"
                         size="mini"
-                        @change="change(item)"
+                        @change="change(item, `picker${k}`)"
+                        format="yyyy年MM月"
                         placeholder="选择月">
                     </el-date-picker>
                 </div>
-                <div :id="item.options.id" :style="{height:height,width:width,paddingBottom: '40px'}"/>
+                <div :id="item.options.id" :style="{height:height,width:width,paddingBottom: '40px'}" v-if="item.options.type !== 'table'"></div>
+                <div style="padding: 20px 0 30px;" v-if="item.options.type === 'table'">
+                    <el-table :data="item.options.tableData" border :header-cell-style="styleH"  size="mini">
+                        <el-table-column type="index" label="序号" width="50"></el-table-column>
+                        <el-table-column prop="punishCode" label="处罚决定书文号"></el-table-column>
+                        <el-table-column prop="punishTarget" label="受处罚主体"></el-table-column>
+                        <el-table-column prop="punishReason" label="处罚事由"></el-table-column>
+                        <el-table-column prop="punishMoney" label="处罚金额"></el-table-column>
+                        <el-table-column prop="punishReasonOther" label="其他处罚（警告/停止新业务/撤销任职资格）"></el-table-column>
+                    </el-table>
+                </div>
             </div>
         </div>
         <el-dialog title="修改地图阀值" :center="true" :visible="showFixRange" class="d_dialog" @close="showFixRange=false" size="mini">
@@ -177,20 +189,20 @@ function debounce(func, wait, immediate) {
     let timeout, args, context, timestamp, result
 
     const later = function() {
-    // 据上一次触发时间间隔
-    const last = +new Date() - timestamp
+        // 据上一次触发时间间隔
+        const last = +new Date() - timestamp
 
-    // 上次被包装函数被调用时间间隔 last 小于设定时间间隔 wait
-    if (last < wait && last > 0) {
-        timeout = setTimeout(later, wait - last)
-    } else {
-        timeout = null
-        // 如果设定为immediate===true，因为开始边界已经调用过了此处无需调用
-        if (!immediate) {
-        result = func.apply(context, args)
-        if (!timeout) context = args = null
+        // 上次被包装函数被调用时间间隔 last 小于设定时间间隔 wait
+        if (last < wait && last > 0) {
+            timeout = setTimeout(later, wait - last)
+        } else {
+            timeout = null
+            // 如果设定为immediate===true，因为开始边界已经调用过了此处无需调用
+            if (!immediate) {
+                result = func.apply(context, args)
+                if (!timeout) context = args = null
+            }
         }
-    }
     }
 
     return function(...args) {
@@ -199,12 +211,12 @@ function debounce(func, wait, immediate) {
     const callNow = immediate && !timeout
     // 如果延时不存在，重新设定延时
     if (!timeout) timeout = setTimeout(later, wait)
-    if (callNow) {
-        result = func.apply(context, args)
-        context = args = null
-    }
+        if (callNow) {
+            result = func.apply(context, args)
+            context = args = null
+        }
 
-    return result
+        return result
     }
 }
 
@@ -399,6 +411,66 @@ new Vue({
                             linedata: [30, 66, 50, 101, 54, 66 ]
                         }
                     },
+                    lifeInsurance10: {
+                        title: '太保产险同业处罚罚单总数及总金额比较',
+                        time: new Date(),
+                        path: 'BB8E3EEC78EA4281ADF4A55325AFE271.pdf',
+                        options: {
+                            type: 'table',
+                            id: 'table_1',
+                            tableData: [
+                                {
+                                    punishCode: "银保监发〔2019〕23号",
+                                    punishTarget: '业务及管理业务及管理业务及管理业务及管理业务及管理',
+                                    punishReason: '处罚事由处罚事由处罚事由',
+                                    punishMoney: '11万元',
+                                    punishReasonOther: '警告/停止新业务/撤销任职资格',
+                                }, {
+                                    punishCode: "银保监发〔2019〕23号",
+                                    punishTarget: '业务及管理业务及管理业务及管理业务及管理业务及管理',
+                                    punishReason: '处罚事由处罚事由处罚事由',
+                                    punishMoney: '11万元',
+                                    punishReasonOther: '警告/停止新业务/撤销任职资格',
+                                }, {
+                                    punishCode: "银保监发〔2019〕23号",
+                                    punishTarget: '业务及管理业务及管理业务及管理业务及管理业务及管理',
+                                    punishReason: '处罚事由处罚事由处罚事由',
+                                    punishMoney: '11万元',
+                                    punishReasonOther: '警告/停止新业务/撤销任职资格',
+                                }
+                            ]
+                        }
+                    },
+                    lifeInsurance11: {
+                        title: '太保产险同业处罚罚单总数及总金额比较',
+                        time: new Date(),
+                        path: 'BB8E3EEC78EA4281ADF4A55325AFE271.pdf',
+                        options: {
+                            type: 'table',
+                            id: 'table_2',
+                            tableData: [
+                                {
+                                    punishCode: "银保监发〔2019〕23号",
+                                    punishTarget: '业务及管理业务及管理业务及管理业务及管理业务及管理',
+                                    punishReason: '处罚事由处罚事由处罚事由',
+                                    punishMoney: '11万元',
+                                    punishReasonOther: '警告/停止新业务/撤销任职资格',
+                                }, {
+                                    punishCode: "银保监发〔2019〕23号",
+                                    punishTarget: '业务及管理业务及管理业务及管理业务及管理业务及管理',
+                                    punishReason: '处罚事由处罚事由处罚事由',
+                                    punishMoney: '11万元',
+                                    punishReasonOther: '警告/停止新业务/撤销任职资格',
+                                }, {
+                                    punishCode: "银保监发〔2019〕23号",
+                                    punishTarget: '业务及管理业务及管理业务及管理业务及管理业务及管理',
+                                    punishReason: '处罚事由处罚事由处罚事由',
+                                    punishMoney: '11万元',
+                                    punishReasonOther: '警告/停止新业务/撤销任职资格',
+                                }
+                            ]
+                        }
+                    },
                     lifeInsurance8: {
                         title: '太保寿险同业处罚金额热力分布图',
                         time: new Date(),
@@ -465,19 +537,19 @@ new Vue({
                         item.id && this.chartsId.push(item.id);
                         switch (item.type) {
                             case 'type1': 
-                                this.type1({id: item.id, category: item.category, bardata: item.bardata, linedata: item.linedata});
+                                this.type1(this.charts[key]);
                                 break;
                             case 'type2': 
-                                this.type2({id: item.id, category: item.category, bardata: item.bardata, linedata: item.linedata});
+                                this.type2(this.charts[key]);
                                 break;
                             case 'type3': 
-                                this.type3({id: item.id, category: item.category, bardata: item.bardata});
+                                this.type3(this.charts[key]);
                                 break;
                             case 'type4': 
-                                this.type4({id: item.id, category: item.category, bardata: item.bardata, linedata: item.linedata});
+                                this.type4(this.charts[key]);
                                 break;
                             case 'type5': 
-                                this.type5({id: item.id, data: item.data});
+                                this.type5(this.charts[key]);
                                 break;
                             default : 
                                 break;
@@ -487,11 +559,27 @@ new Vue({
                 })
             }, 500);
         },
+        querySignleData(param) {
+            this.loading = this.$loading({
+                lock: true,
+                text: 'Loading',
+                spinner: 'el-icon-loading',
+                background: 'rgba(0, 0, 0, 0.7)'
+            });
+            setTimeout(()=>{
+                this.loading.close(); 
+            }, 500)
+        },
         onSearch() {
             this.query();
         },
-        change(item, val) {
-            console.log(item, val)
+        change(item,ref) {
+            let param = {
+                id: item.options.id,
+                month: this.$refs[ref].displayValue || this.$refs[ref][0].displayValue
+            }
+            this.querySignleData(param);
+            console.log(param)
         },
         showDialog() {
             this.showFixRange = true;
@@ -499,8 +587,11 @@ new Vue({
         changeRange(data) {
             this.query();
         },
-        type1({id, category, bardata, linedata}) {
-            this[id] = echarts.init(document.getElementById(id));
+        styleH() {
+            return {background: '#5b9bd5', textAlign: 'center', color: '#fff'}
+        },
+        type1(info) {
+            this[info.options.id] = echarts.init(document.getElementById(info.options.id));
             let option = {
                 tooltip: {},
                 toolbox: {
@@ -508,7 +599,7 @@ new Vue({
                     feature: {
                         saveAsImage: {
                             show: true,
-                            title: '保存为图片' 
+                            name: info.title 
                         }
                     }
                 },
@@ -533,7 +624,7 @@ new Vue({
                         interval: 0,
                         rotate: 30
                     },
-                    data: category
+                    data: info.options.category
                 },
                 yAxis: [
                     {
@@ -566,7 +657,7 @@ new Vue({
                         color: '#000',
                         fontWeight: 'bold'
                     },
-                    data: bardata
+                    data: info.options.bardata
                 }, {
                     color: '#ed7d31',
                     name: '罚单数量（份）',
@@ -583,13 +674,13 @@ new Vue({
                         color: 'red',
                         fontWeight: 'bold'
                     },
-                    data: linedata
+                    data: info.options.linedata
                 }]
             };
-            this[id].setOption(option);
+            this[info.options.id].setOption(option);
         },
-        type2({id, category, bardata, linedata}) {
-            this[id] = echarts.init(document.getElementById(id));
+        type2(info) {
+            this[info.options.id] = echarts.init(document.getElementById(info.options.id));
             let option = {
                 tooltip: {},
                 toolbox: {
@@ -597,7 +688,7 @@ new Vue({
                     feature: {
                         saveAsImage: {
                             show: true,
-                            title: '保存为图片' 
+                            name: info.options.title 
                         }
                     }
                 },
@@ -621,7 +712,7 @@ new Vue({
                     axisLabel: {
                         interval: 0
                     },
-                    data: category
+                    data: info.options.category
                 },
                 yAxis: [
                     {
@@ -660,7 +751,7 @@ new Vue({
                         color: '#000',
                         fontWeight: 'bold'
                     },
-                    data: bardata
+                    data: info.options.bardata
                 }, {
                     color: '#ed7d31',
                     name: '罚单数量（份）',
@@ -677,13 +768,13 @@ new Vue({
                         color: 'red',
                         fontWeight: 'bold'
                     },
-                    data: linedata
+                    data: info.options.linedata
                 }]
             };
-            this[id].setOption(option);
+            this[info.options.id].setOption(option);
         },
-        type3({id, category, bardata}) {
-            this[id] = echarts.init(document.getElementById(id));
+        type3(info) {
+            this[info.options.id] = echarts.init(document.getElementById(info.options.id));
             let option = {
                 tooltip: {},
                 toolbox: {
@@ -691,11 +782,13 @@ new Vue({
                     feature: {
                         saveAsImage: {
                             show: true,
-                            title: '保存为图片' 
+                            name: info.options.title
                         }
                     }
                 },
-                legend: {},
+                legend: {
+                    show: false
+                },
                 xAxis: {
                     axisTick: {
                         alignWithLabel: true,
@@ -703,7 +796,7 @@ new Vue({
                     axisLabel: {
                         interval: 0
                     },
-                    data: category
+                    data: info.options.category
                 },
                 yAxis: [
                     {
@@ -722,13 +815,13 @@ new Vue({
                         color: '#000',
                         fontWeight: 'bold'
                     },
-                    data: bardata
+                    data: info.options.bardata
                 }]
             };
-            this[id].setOption(option);
+            this[info.options.id].setOption(option);
         },
-        type4({id, category, bardata, linedata}) {
-            this[id] = echarts.init(document.getElementById(id));
+        type4(info) {
+            this[info.options.id] = echarts.init(document.getElementById(info.options.id));
             let option = {
                 tooltip: {},
                 toolbox: {
@@ -736,7 +829,7 @@ new Vue({
                     feature: {
                         saveAsImage: {
                             show: true,
-                            title: '保存为图片' 
+                            name: info.options.title
                         }
                     }
                 },
@@ -775,7 +868,7 @@ new Vue({
                     axisLabel: {
                         interval: 0
                     },
-                    data: category
+                    data: info.options.category
                 },
                 series: [{
                     color: '#ed7d31',
@@ -790,7 +883,7 @@ new Vue({
                         color: 'red',
                         fontWeight: 'bold'
                     },
-                    data: linedata
+                    data: info.options.linedata
                 }, {
                     color: '#5b9bd5',
                     name: '处罚金额（万元）',
@@ -803,19 +896,19 @@ new Vue({
                         color: '#000',
                         fontWeight: 'bold'
                     },
-                    data: bardata
+                    data: info.options.bardata
                 }]
             };
-            this[id].setOption(option);
+            this[info.options.id].setOption(option);
         },
-        type5({id, data}) {
-            this[id] = echarts.init(document.getElementById(id));
+        type5(info) {
+            this[info.options.id] = echarts.init(document.getElementById(info.options.id));
             let categorys = {
                 '0': [],
                 '100': [],
                 '200': []
             }
-            data.forEach(item=> {
+            info.options.data.forEach(item=> {
                 if(item.value>=0 && item.value<=100 ){
                     categorys['0'].push(item.name);
                     return;
@@ -878,10 +971,10 @@ new Vue({
                             show: false  
                         }  
                     },  
-                    data: data  //数据
+                    data: info.options.data  //数据
                 }]  
             };
-            this[id].setOption(option);
+            this[info.options.id].setOption(option);
         },
     }
 })

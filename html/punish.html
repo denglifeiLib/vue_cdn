@@ -14,30 +14,30 @@
 </head>
 <style>
     .d_container{
-        padding: 30px;
+        padding: 15px;
     }
     .d_search{
-        min-height: 100px;
+        min-height: 50px;
     }
     .d_pagination{
-        margin-top: 30px;
+        margin-top: 15px;
         text-align: center;
     }
     .d_steps{
-       margin-bottom: 30px;
+       margin-bottom: 15px;
     }
     .d_dialog .el-dialog__body{
-        padding: 30px;
+        padding: 15px;
     }
     .mt20{
-        margin-top: 20px;
+        margin-top: 10px;
     }
 </style>
 <body>
     <div id="refApp">
         <div class="d_container">
             <!-- onSearch -->
-             <el-form :inline="true" :model="form" class="d_search">
+             <el-form :inline="true" :model="form" class="d_search" size="mini">
                 <el-form-item label="数据状态">
                     <el-select v-model="form.status" multiple placeholder="请选择">
                         <el-option
@@ -73,7 +73,7 @@
             </el-form>
     
             <!-- tabel -->
-            <el-table :data="tableData" border style="width: 100%;" v-loading="loading" :header-cell-style="styleH">
+            <el-table :data="tableData" border style="width: 100%;" v-loading="loading" :header-cell-style="styleH" size="mini">
                 <el-table-column prop="punishDate" label="处罚日期" width="130"></el-table-column>
                 <el-table-column prop="institution" label="机构名称" width="150"></el-table-column>
                 <el-table-column prop="person_name" label="当事人姓名" width="100px"></el-table-column>
@@ -176,11 +176,11 @@
         </div>
         <!-- 爬虫数据修改 -->
         <el-dialog title="监管处罚数据审核" :visible="dialogVisible" class="d_dialog" :center="true" @close="dialogVisible=false" width="80%">
-            <div>
+            <div style="min-height: 600px;">
                 <el-steps :active="activeStep" simple class="d_steps">
                     <el-step v-for="(step,k) in steps" :key="k" :title="step.label" :icon="step.icon" :status="step.status"></el-step>
                 </el-steps>
-                <div v-show="activeStep===0">
+                <div v-if="activeStep===0">
                     <el-form ref="form" :model="form" label-width="140px">
                         <el-form-item label="处罚日期">
                             <el-input v-model="audit_form_info.punishDate"></el-input>
@@ -247,7 +247,7 @@
                         </el-form-item>
                     </el-form>
                 </div>
-                <div v-show="activeStep===1">
+                <div v-if="activeStep===1">
                     <el-row :gutter="20">
                         <el-col :span="3">原文链接</el-col>
                         <el-col :span="21">{{audit_form_info.originLink}}</el-col>
@@ -268,7 +268,7 @@
                         </el-table-column>
                     </el-table>
                 </div>
-                <div v-show="activeStep===2">
+                <div v-if="activeStep===2">
                     <el-row :gutter="20">
                         <el-col :span="3">原文链接</el-col>
                         <el-col :span="21">{{audit_form_info.originLink}}</el-col>
@@ -277,8 +277,8 @@
                         <el-col :span="3">PDF附件</el-col>
                         <el-col :span="21">{{audit_form_info.attachment}}</el-col>
                     </el-row>
-                    <el-table :data="audit_form_info.combineTable" border :header-cell-style="styleH" style="width: 100%;margin-top: 40px;" @selection-change="handleSelectionChange">
-                        <el-table-column type="selection" label="选择" width="55"></el-table-column>
+                    <el-table :data="audit_form_info.combineTable" border :header-cell-style="styleH" style="width: 100%;margin-top: 40px;" @selection-change="handleSelectionChange" height="510" show-summary :summary-method="getSummaries" size="mini">
+                        <!-- <el-table-column prop="id" type="selection" label="选择" width="55"></el-table-column> -->
                         <el-table-column prop="punishCode" label="处罚文号" width="120"></el-table-column>
                         <el-table-column prop="person_name" label="当事人姓名" width="120"></el-table-column>
                         <el-table-column prop="institution" label="机构名称" width="120"></el-table-column>
@@ -288,6 +288,11 @@
                             <template slot-scope="scope">
                                 <div v-html="scope.row.punishSheetList.join('<br/>')"></div>
                                 <!-- <p v-for="(item,k) in scope.row.unit_warn_list" :key="k">{{item}}</p> -->
+                            </template>
+                        </el-table-column>
+                        <el-table-column prop="combine" label="是否合并">
+                            <template slot-scope="scope">
+                                <el-switch v-model="scope.row.combine" active-color="#13ce66" inactive-color="#eee" active-value="100" inactive-value="0"></el-switch>
                             </template>
                         </el-table-column>
                     </el-table>
@@ -319,7 +324,7 @@ new Vue({
         },
         loading: false,
 
-        dialogVisible: true,
+        dialogVisible: false,
         activeStep: 0,
         steps: [
             {
@@ -519,6 +524,18 @@ new Vue({
         },
         styleH() {
             return {background: '#fbfbfb', textAlign: 'center', color: '#333'}
+        },
+
+        getSummaries(param) {
+            const { columns, data } = param;
+            let key = data.length - 1;
+            let fixedColumn = data[key];
+
+            const sums = [];
+            columns.forEach((column, index) => {
+                sums.push(column.property==='combine' ? '' : fixedColumn[column.property])
+            })
+            return sums;
         },
 
         queryAuditInfo() {
